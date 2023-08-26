@@ -1,6 +1,7 @@
 ﻿using CoTuongBackend.Application.Interfaces;
 using CoTuongBackend.Domain.Interfaces;
 using CoTuongBackend.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,5 +31,11 @@ public class UsersController : ControllerBase
         }
         var token = _tokenService.CreateToken(firstUser);
         return Ok(token);
+    }
+    [Authorize]
+    [HttpGet("check-authorize")]
+    public int GetNum()
+    {
+        return 3;
     }
 }
