@@ -1,5 +1,7 @@
-﻿namespace CoTuongBackend.Domain.Entities;
+﻿using Microsoft.AspNetCore.Identity;
 
-public class ApplicationUser
+namespace CoTuongBackend.Domain.Entities;
+
+public class ApplicationUser : IdentityUser<Guid>
 {
 }
