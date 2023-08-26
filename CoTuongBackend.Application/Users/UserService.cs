@@ -1,4 +1,4 @@
-﻿using CoTuongBackend.Application.Interfaces;
+﻿using CoTuongBackend.Application.Users;
 
 namespace CoTuongBackend.Application.Services;
 

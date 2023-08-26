@@ -1,4 +1,4 @@
-﻿namespace CoTuongBackend.Application.Interfaces;
+﻿namespace CoTuongBackend.Application.Users;
 
 public interface IUserService
 {
