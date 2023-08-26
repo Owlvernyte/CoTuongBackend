@@ -1,4 +1,4 @@
-﻿using CoTuongBackend.Application.Interfaces;
+﻿using CoTuongBackend.Application.Users;
 using CoTuongBackend.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
