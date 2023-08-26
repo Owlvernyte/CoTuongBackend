@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace CoTuongBackend.API.Admin
+namespace CoTuongBackend.API.Controllers.Admin
 {
     [Route("api/admin/[controller]")]
     [ApiController]
