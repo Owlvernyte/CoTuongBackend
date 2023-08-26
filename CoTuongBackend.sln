@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoTuongBackend.API", "CoTuongBackend.API\CoTuongBackend.API.csproj", "{42762D45-A521-462F-A07A-4B978A18E53B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoTuongBackend.API", "CoTuongBackend.API\CoTuongBackend.API.csproj", "{42762D45-A521-462F-A07A-4B978A18E53B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoTuongBackend.Domain", "CoTuongBackend.Domain\CoTuongBackend.Domain.csproj", "{2000392B-821C-4B82-AA00-5F5DC35F7639}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoTuongBackend.Application", "CoTuongBackend.Application\CoTuongBackend.Application.csproj", "{2E1CDA89-7952-40BC-B9B4-8613DE00EE72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoTuongBackend.Infrastructure", "CoTuongBackend.Infrastructure\CoTuongBackend.Infrastructure.csproj", "{1C865610-DD8E-47B0-B706-6EE705F5767B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{42762D45-A521-462F-A07A-4B978A18E53B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42762D45-A521-462F-A07A-4B978A18E53B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42762D45-A521-462F-A07A-4B978A18E53B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2000392B-821C-4B82-AA00-5F5DC35F7639}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2000392B-821C-4B82-AA00-5F5DC35F7639}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2000392B-821C-4B82-AA00-5F5DC35F7639}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2000392B-821C-4B82-AA00-5F5DC35F7639}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E1CDA89-7952-40BC-B9B4-8613DE00EE72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E1CDA89-7952-40BC-B9B4-8613DE00EE72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E1CDA89-7952-40BC-B9B4-8613DE00EE72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E1CDA89-7952-40BC-B9B4-8613DE00EE72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C865610-DD8E-47B0-B706-6EE705F5767B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C865610-DD8E-47B0-B706-6EE705F5767B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C865610-DD8E-47B0-B706-6EE705F5767B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C865610-DD8E-47B0-B706-6EE705F5767B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
