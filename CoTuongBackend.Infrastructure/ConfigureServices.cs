@@ -1,9 +1,14 @@
 ﻿using CoTuongBackend.Domain.Entities;
+using CoTuongBackend.Domain.Interfaces;
 using CoTuongBackend.Infrastructure.Persistence;
+using CoTuongBackend.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Text;
 
 namespace CoTuongBackend.Infrastructure;
 
@@ -37,7 +42,26 @@ public static class ConfigureServices
             //.AddRoles<ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["TokenKey"]!));
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    IssuerSigningKey = key,
+
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromSeconds(5)
+                };
+            });
+
         services.AddScoped<ApplicationDbContextInitializer>();
+
+        services.AddScoped<ITokenService, TokenService>();
+
         return services;
     }
 }
