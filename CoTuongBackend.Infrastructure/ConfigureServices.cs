@@ -1,5 +1,7 @@
 ﻿using CoTuongBackend.Domain.Entities;
+using CoTuongBackend.Domain.Interfaces;
 using CoTuongBackend.Infrastructure.Persistence;
+using CoTuongBackend.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +40,9 @@ public static class ConfigureServices
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<ApplicationDbContextInitializer>();
+
+        services.AddScoped<ITokenService, TokenService>();
+
         return services;
     }
 }
