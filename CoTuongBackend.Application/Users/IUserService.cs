@@ -2,6 +2,6 @@
 
 public interface IUserService
 {
-    AccountDTO Register(string userName, string email, string password, string confirmPassword);
-    AccountDTO Login(string userNameOrEmail, string password);
+    Task<AccountDTO> Register(string userName, string email, string password, string confirmPassword);
+    Task<AccountDTO> Login(string userNameOrEmail, string password);
 }
