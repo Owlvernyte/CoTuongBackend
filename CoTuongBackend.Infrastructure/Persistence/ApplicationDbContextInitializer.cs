@@ -1,16 +1,20 @@
 ﻿using CoTuongBackend.Domain.Entities;
+using CoTuongBackend.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CoTuongBackend.Infrastructure.Persistence;
 
 public class ApplicationDbContextInitializer
 {
+    private readonly ILogger<ApplicationDbContextInitializer> _logger;
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public ApplicationDbContextInitializer(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public ApplicationDbContextInitializer(ILogger<ApplicationDbContextInitializer> logger, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
+        _logger = logger;
         _context = context;
         _userManager = userManager;
     }
@@ -24,7 +28,7 @@ public class ApplicationDbContextInitializer
         }
         catch (Exception ex)
         {
-            //Log.Error(ex, "Migration error");
+            _logger.LogError(ex, "Migration error");
         }
     }
     public async Task SeedAsync()
@@ -35,7 +39,7 @@ public class ApplicationDbContextInitializer
         }
         catch (Exception ex)
         {
-            //Log.Error(ex, "Seeding error");
+            _logger.LogError(ex, "Seeding error");
         }
     }
 
@@ -46,8 +50,16 @@ public class ApplicationDbContextInitializer
         var tyui = new ApplicationUser
         {
             UserName = "tyui",
-            Email = "tyui@gmail.com"
+            Email = "tyui@gmail.com",
+            Role = Role.User
+        };
+        var thai = new ApplicationUser
+        {
+            UserName = "thai",
+            Email = "thai@gmail.com",
+            Role = Role.Admin
         };
         await _userManager.CreateAsync(tyui, "12345678");
+        await _userManager.CreateAsync(thai, "12345678");
     }
 }
