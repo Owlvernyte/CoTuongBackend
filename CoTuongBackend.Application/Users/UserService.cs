@@ -17,9 +17,25 @@ public class UserService : IUserService
         _userManager = userManager;
         _tokenService = tokenService;
     }
-    public Task<AccountDTO> Login(string userNameOrEmail, string password)
+    public async Task<AccountDTO> Login(string userNameOrEmail, string password)
     {
-        throw new NotImplementedException();
+        if (!(await _userManager.Users.AnyAsync(u => u.UserName == userNameOrEmail)) && !(await _userManager.Users.AnyAsync(u => u.Email == userNameOrEmail)))
+        {
+            // TODO: Check UserName
+            throw new UnauthorizedAccessException();
+        }
+        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
+        if(await _userManager.CheckPasswordAsync(user!, password))
+        {
+            return new AccountDTO
+            {
+                Id = user!.Id,
+                UserName = user.UserName!,
+                Email = user.Email!,
+                Token = _tokenService.CreateToken(user)
+            };
+        }
+        throw new UnauthorizedAccessException();
     }
 
     public async Task<AccountDTO> Register(string userName, string email, string password, string confirmPassword)

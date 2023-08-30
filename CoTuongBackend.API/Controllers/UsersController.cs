@@ -21,9 +21,15 @@ public class UsersController : ControllerBase
         _tokenService = tokenService;
     }
     [HttpPost("register")]
-    public async Task<IActionResult> Register(string userName, string email, string password, string confirmPassword)
+    public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
     {
-        return Ok(await _userService.Register(userName, email, password, confirmPassword));
+        return Ok(await _userService.Register(registerDTO.Username,registerDTO.Email,registerDTO.Password,registerDTO.ConfirmPassword));
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+    {
+        return Ok(await _userService.Login(loginDTO.UserNameOrEmail, loginDTO.Password));
     }
     [HttpGet]
     public async Task<IActionResult> Get()
