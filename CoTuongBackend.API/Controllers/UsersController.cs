@@ -1,4 +1,4 @@
-﻿using CoTuongBackend.Application.Interfaces;
+﻿using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Interfaces;
 using CoTuongBackend.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -37,5 +37,10 @@ public class UsersController : ControllerBase
     public int GetNum()
     {
         return 3;
+    }
+    [HttpGet("users")]
+    public async Task<IActionResult> GetUsers()
+    {
+        return Ok(_context.Users);
     }
 }
