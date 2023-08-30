@@ -20,7 +20,11 @@ public class UsersController : ControllerBase
         _context = context;
         _tokenService = tokenService;
     }
-
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(string userName, string email, string password, string confirmPassword)
+    {
+        return Ok(await _userService.Register(userName, email, password, confirmPassword));
+    }
     [HttpGet]
     public async Task<IActionResult> Get()
     {

@@ -3,6 +3,7 @@ using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace CoTuongBackend.Application.Services;
 
@@ -16,26 +17,29 @@ public class UserService : IUserService
         _userManager = userManager;
         _tokenService = tokenService;
     }
-    public AccountDTO Login(string userNameOrEmail, string password)
+    public Task<AccountDTO> Login(string userNameOrEmail, string password)
     {
         throw new NotImplementedException();
     }
 
-    public async AccountDTO Register(string userName, string email, string password, string confirmPassword)
+    public async Task<AccountDTO> Register(string userName, string email, string password, string confirmPassword)
     {
         if (await _userManager.Users.AnyAsync(u => u.UserName == userName))
         {
             // TODO: Check UserName
+            throw new ValidationException();
         }
 
         if (await _userManager.Users.AnyAsync(u => u.Email == email))
         {
             // TODO: Check Email
+            throw new ValidationException();
         }
 
         if (password != confirmPassword)
         {
             // TODO: Check confirmPassword
+            throw new ValidationException();
         }
 
         var user = new ApplicationUser
@@ -57,6 +61,6 @@ public class UserService : IUserService
             };
         }
 
-        return new AccountDTO { Email = "", UserName = "" };
+        throw new ValidationException();
     }
 }
