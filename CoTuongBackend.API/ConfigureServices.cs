@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using CoTuongBackend.API.Filters;
+using Microsoft.OpenApi.Models;
 
 namespace CoTuongBackend.API;
 
@@ -6,7 +7,10 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddAPIServices(this IServiceCollection services)
     {
-        services.AddControllers();
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<ApiExceptionFilterAttribute>();
+        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(
@@ -35,6 +39,7 @@ public static class ConfigureServices
 
                 options.AddSecurityRequirement(securityRequirement);
             });
+
         return services;
     }
 }

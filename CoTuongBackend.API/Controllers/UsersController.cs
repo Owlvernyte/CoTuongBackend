@@ -1,4 +1,4 @@
-﻿using CoTuongBackend.Application.Interfaces;
+﻿using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Interfaces;
 using CoTuongBackend.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +20,17 @@ public class UsersController : ControllerBase
         _context = context;
         _tokenService = tokenService;
     }
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+    {
+        return Ok(await _userService.Register(registerDTO.Username,registerDTO.Email,registerDTO.Password,registerDTO.ConfirmPassword));
+    }
 
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+    {
+        return Ok(await _userService.Login(loginDTO.UserNameOrEmail, loginDTO.Password));
+    }
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -37,5 +47,10 @@ public class UsersController : ControllerBase
     public int GetNum()
     {
         return 3;
+    }
+    [HttpGet("users")]
+    public async Task<IActionResult> GetUsers()
+    {
+        return Ok(_context.Users);
     }
 }
