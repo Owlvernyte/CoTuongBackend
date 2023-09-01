@@ -29,5 +29,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .WithMany(u => u.OpponentMatches)
             .HasForeignKey(m => m.OpponentUserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Match>()
+            .HasOne(m => m.Room)
+            .WithMany(u => u.Matches)
+            .HasForeignKey(m => m.RoomId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
