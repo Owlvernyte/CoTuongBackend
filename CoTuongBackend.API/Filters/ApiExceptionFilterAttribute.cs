@@ -1,24 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CoTuongBackend.Domain.Exceptions;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 
 namespace CoTuongBackend.API.Filters;
 
 public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
 {
     private readonly IDictionary<Type, Action<ExceptionContext>> _exceptionHandlers;
-    public ApiExceptionFilterAttribute()
+    private readonly ILogger<ApiExceptionFilterAttribute> _logger;
+
+    public ApiExceptionFilterAttribute(ILogger<ApiExceptionFilterAttribute> logger)
     {
         _exceptionHandlers = new Dictionary<Type, Action<ExceptionContext>>
         {
             { typeof(InvalidOperationException), HandleInvalidOperationException },
             { typeof(ValidationException), HandleValidationException },
-            //{ typeof(NotFoundException), HandleNotFoundException },
+            { typeof(NotFoundException), HandleNotFoundException },
             { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
             //{ typeof(ForbiddenAccessException), HandleForbiddenAccessException },
         };
+        _logger = logger;
     }
 
     public override void OnException(ExceptionContext context)
@@ -31,7 +33,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
     private void HandleException(ExceptionContext context)
     {
         Type type = context.Exception.GetType();
-        if (_exceptionHandlers.TryGetValue(type, out Action<ExceptionContext> value))
+        if (_exceptionHandlers.TryGetValue(type, out Action<ExceptionContext>? value))
         {
             value.Invoke(context);
             return;
@@ -47,9 +49,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
     {
         var exception = (InvalidOperationException)context.Exception;
 
-        // Log the exception details
-        Trace.TraceError($"An invalid operation exception occurred: {exception.Message}");
-        //Log.Error($"An invalid operation exception occurred: {exception.Message}");
+        _logger.LogError($"An invalid operation exception occurred: {exception.Message}");
 
         var details = new ProblemDetails
         {
@@ -71,25 +71,25 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
     {
         var exception = (ValidationException)context.Exception;
 
-        //Log.Error($"A Validation exception occurred: {exception.Message}");
+        _logger.LogError($"A Validation exception occurred: {exception.Message}");
 
-        //var modelState = exception.Errors
-        //    .GroupBy(e => e.PropertyName, e => e.ErrorMessage)
-        //    .ToDictionary(failureGroup => failureGroup.Key, failureGroup => failureGroup.ToArray());
+        var modelState = exception.Errors
+            .GroupBy(e => e.PropertyName, e => e.ErrorMessage)
+            .ToDictionary(failureGroup => failureGroup.Key, failureGroup => failureGroup.ToArray());
 
-        //var details = new ValidationProblemDetails(modelState)
-        //{
-        //    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-        //};
+        var details = new ValidationProblemDetails(modelState)
+        {
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+        };
 
-        //context.Result = new BadRequestObjectResult(details);
-        context.Result = new BadRequestObjectResult(new ModelStateDictionary());
+        context.Result = new BadRequestObjectResult(details);
 
         context.ExceptionHandled = true;
     }
     private static void HandleInvalidModelStateException(ExceptionContext context)
     {
-        //Log.Error($"An Invalid Model exception occurred: {context.Exception.Message}");
+        // TODO: You can not log error here
+        //_logger.LogError($"An Invalid Model exception occurred: {context.Exception.Message}");
 
         var details = new ValidationProblemDetails(context.ModelState)
         {
@@ -100,24 +100,24 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
 
         context.ExceptionHandled = true;
     }
-    //private void HandleNotFoundException(ExceptionContext context)
-    //{
-    //    var exception = (NotFoundException)context.Exception;
-    //    //Log.Error($"An Not Found exception occurred: {exception.Message}");
-    //    var details = new ProblemDetails()
-    //    {
-    //        Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-    //        Title = "The specified resource was not found.",
-    //        Detail = exception.Message
-    //    };
+    private void HandleNotFoundException(ExceptionContext context)
+    {
+        var exception = (NotFoundException)context.Exception;
+        _logger.LogError($"An Not Found exception occurred: {exception.Message}");
+        var details = new ProblemDetails()
+        {
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+            Title = "The specified resource was not found.",
+            Detail = exception.Message
+        };
 
-    //    context.Result = new NotFoundObjectResult(details);
+        context.Result = new NotFoundObjectResult(details);
 
-    //    context.ExceptionHandled = true;
-    //}
+        context.ExceptionHandled = true;
+    }
     private void HandleUnauthorizedAccessException(ExceptionContext context)
     {
-        //Log.Error($"An Unauthorized Access exception occurred: {context.Exception.Message}");
+        _logger.LogError($"An Unauthorized Access exception occurred: {context.Exception.Message}");
         var details = new ProblemDetails
         {
             Status = StatusCodes.Status401Unauthorized,

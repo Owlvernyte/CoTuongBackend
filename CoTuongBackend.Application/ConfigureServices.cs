@@ -1,5 +1,5 @@
-﻿using CoTuongBackend.Application.Users;
-using CoTuongBackend.Application.Services;
+﻿using CoTuongBackend.Application.Services;
+using CoTuongBackend.Application.Users;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CoTuongBackend.Application;
