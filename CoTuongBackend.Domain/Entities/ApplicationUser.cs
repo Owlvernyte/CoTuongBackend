@@ -10,7 +10,7 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity<Guid>
     public Role Role { get; set; } = Role.User;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public virtual ICollection<Room>? Rooms { get; set; }
-    public virtual ICollection<Match>? HostedMatches { get; set; }
-    public virtual ICollection<Match>? OpponentMatches { get; set; }
+    public virtual ICollection<Room> Rooms { get; set; } = new HashSet<Room>();
+    public virtual ICollection<Match> HostedMatches { get; set; } = new HashSet<Match>();
+    public virtual ICollection<Match> OpponentMatches { get; set; } = new HashSet<Match>();
 }

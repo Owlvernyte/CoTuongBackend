@@ -130,7 +130,7 @@ namespace CoTuongBackend.Infrastructure.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.ToTable("Match");
+                    b.ToTable("Match", (string)null);
                 });
 
             modelBuilder.Entity("CoTuongBackend.Domain.Entities.Room", b =>
@@ -161,7 +161,7 @@ namespace CoTuongBackend.Infrastructure.Migrations
 
                     b.HasIndex("HostUserId");
 
-                    b.ToTable("Room");
+                    b.ToTable("Room", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>

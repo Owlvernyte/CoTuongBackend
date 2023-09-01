@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CoTuongBackend.Domain.Entities
+﻿namespace CoTuongBackend.Domain.Entities
 {
     public class Room : BaseEntity<Guid>
     {
@@ -13,7 +7,7 @@ namespace CoTuongBackend.Domain.Entities
         public string? Password { get; set; }
         public Guid HostUserId { get; set; }
         public virtual required ApplicationUser HostUser { get; set; }
-        public virtual ICollection<ApplicationUser>? Users { get; set; }
-        public virtual ICollection<Match>? Matches { get; set; }
+        public virtual ICollection<ApplicationUser> Users { get; set; } = new HashSet<ApplicationUser>();
+        public virtual ICollection<Match> Matches { get; set; } = new HashSet<Match>();
     }
 }
