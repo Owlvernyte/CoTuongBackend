@@ -1,9 +1,10 @@
 ﻿using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Interfaces;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace CoTuongBackend.Application.Services;
 
@@ -25,7 +26,7 @@ public class UserService : IUserService
             throw new UnauthorizedAccessException();
         }
         var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
-        if(await _userManager.CheckPasswordAsync(user!, password))
+        if (await _userManager.CheckPasswordAsync(user!, password))
         {
             return new AccountDTO
             {
@@ -40,23 +41,26 @@ public class UserService : IUserService
 
     public async Task<AccountDTO> Register(string userName, string email, string password, string confirmPassword)
     {
+        var validationFailures = new List<ValidationFailure>();
+
+        if (userName.Length > 10)
+            validationFailures
+                    .Add(new ValidationFailure("UserName", "User name must be less than 10 characters"));
+
         if (await _userManager.Users.AnyAsync(u => u.UserName == userName))
-        {
-            // TODO: Check UserName
-            throw new ValidationException();
-        }
+            validationFailures
+                .Add(new ValidationFailure("UserName", "User name already exists"));
 
         if (await _userManager.Users.AnyAsync(u => u.Email == email))
-        {
-            // TODO: Check Email
-            throw new ValidationException();
-        }
+            validationFailures
+                .Add(new ValidationFailure("Email", "Email already exists"));
 
         if (password != confirmPassword)
-        {
-            // TODO: Check confirmPassword
-            throw new ValidationException();
-        }
+            validationFailures
+                .Add(new ValidationFailure("ConfirmPassword", "Confirm password not match"));
+
+        if (validationFailures.Any())
+            throw new ValidationException(validationFailures);
 
         var user = new ApplicationUser
         {
@@ -77,6 +81,6 @@ public class UserService : IUserService
             };
         }
 
-        throw new ValidationException();
+        throw new InvalidOperationException();
     }
 }

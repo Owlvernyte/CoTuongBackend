@@ -23,7 +23,7 @@ public class UsersController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
     {
-        return Ok(await _userService.Register(registerDTO.Username,registerDTO.Email,registerDTO.Password,registerDTO.ConfirmPassword));
+        return Ok(await _userService.Register(registerDTO.Username, registerDTO.Email, registerDTO.Password, registerDTO.ConfirmPassword));
     }
 
     [HttpPost("login")]
