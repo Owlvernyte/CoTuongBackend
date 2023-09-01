@@ -9,6 +9,8 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity<Guid>
     [PersonalData]
     public Role Role { get; set; } = Role.User;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public virtual ICollection<Room>? Rooms { get; set; }
     public virtual ICollection<Match>? HostedMatches { get; set; }
     public virtual ICollection<Match>? OpponentMatches { get; set; }
 }
