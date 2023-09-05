@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EntityFrameworkCore.Data.Repository" Version="7.0.10" />
+    <PackageReference Include="EntityFrameworkCore.Data.Repository.Abstractions" Version="7.0.10" />
+    <PackageReference Include="EntityFrameworkCore.Data.UnitOfWork" Version="7.0.10" />
+    <PackageReference Include="EntityFrameworkCore.Data.UnitOfWork.Abstractions" Version="7.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
