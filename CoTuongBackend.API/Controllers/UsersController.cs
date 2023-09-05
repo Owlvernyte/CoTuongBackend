@@ -31,6 +31,11 @@ public class UsersController : ControllerBase
     {
         return Ok(await _userService.Login(loginDTO.UserNameOrEmail, loginDTO.Password));
     }
+    [HttpPost("change-password")]
+    public async Task<IActionResult> CHangePassword([FromBody] ChagePasswordDTO chagePasswordDTO)
+    {
+        return Ok(await _userService.ChangePassword(chagePasswordDTO.UserNameOrEmail,chagePasswordDTO.NewPassword,chagePasswordDTO.ConfirmPassword,chagePasswordDTO.OldPassword));
+    }
     [HttpGet]
     public async Task<IActionResult> Get()
     {
