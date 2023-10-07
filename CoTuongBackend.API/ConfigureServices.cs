@@ -40,6 +40,8 @@ public static class ConfigureServices
                 options.AddSecurityRequirement(securityRequirement);
             });
 
+        services.AddSignalR();
+
         return services;
     }
 }

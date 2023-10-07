@@ -1,6 +1,6 @@
 ﻿namespace CoTuongBackend.Domain.Entities;
 
-public class Room : BaseEntity<Guid>
+public class Room : BaseEntity
 {
     public required string Name { get; set; }
     public int CountUser { get; set; }

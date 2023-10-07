@@ -1,4 +1,5 @@
 using CoTuongBackend.API;
+using CoTuongBackend.API.Hubs;
 using CoTuongBackend.Application;
 using CoTuongBackend.Infrastructure;
 using CoTuongBackend.Infrastructure.Persistence;
@@ -34,5 +35,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<GameHub>("hubs/game");
 
 app.Run();
