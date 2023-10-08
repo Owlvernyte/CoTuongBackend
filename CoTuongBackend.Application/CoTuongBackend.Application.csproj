@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
+    <Folder Include="Games\" />
   </ItemGroup>
 
   <ItemGroup>
