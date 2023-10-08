@@ -1,7 +1,6 @@
-﻿using CoTuongBackend.Domain.Entities.Games;
-using CoTuongBackend.Domain.Enums;
+﻿using CoTuongBackend.Domain.Enums;
 
-namespace CoTuongBackend.Domain.Entities.Pieces;
+namespace CoTuongBackend.Domain.Entities.Games;
 
 public abstract class Piece
 {

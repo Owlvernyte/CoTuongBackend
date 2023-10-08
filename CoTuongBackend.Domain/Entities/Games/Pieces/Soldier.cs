@@ -1,6 +1,6 @@
 ﻿using CoTuongBackend.Domain.Enums;
 
-namespace CoTuongBackend.Domain.Entities.Pieces;
+namespace CoTuongBackend.Domain.Entities.Games.Pieces;
 
 public class Soldier : Piece
 {
