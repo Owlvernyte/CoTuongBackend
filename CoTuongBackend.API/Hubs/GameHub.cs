@@ -38,20 +38,17 @@ public class GameHub : Hub<IGameHubClient>
     }
     public Task Move(Coordinate source, Coordinate destination)
     {
-        // connection.invoke("Move", "a1", "a2");
-
         var roomId = "RoomId";
 
-        Piece piece = Boards[roomId].Squares[source.X, source.Y]!;
+        var board = Boards[roomId];
 
-        var isValid = piece.IsValidMove(destination, Boards[roomId]);
+        var piece = board.GetPiece(source);
 
-        // Move
+        if (piece is null) return Task.CompletedTask;
+
+        var isValid = board.Move(piece, destination);
+
         if (!isValid) return Task.CompletedTask;
-
-        Boards[roomId].Squares[destination.X, destination.Y] = Boards[roomId].Squares[source.X, source.Y];
-
-        Boards[roomId].Squares[source.X, source.Y] = null;
 
         Console.WriteLine(source + " " + destination);
 
