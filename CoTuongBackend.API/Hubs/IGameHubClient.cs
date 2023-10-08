@@ -4,7 +4,7 @@ namespace CoTuongBackend.API.Hubs;
 
 public interface IGameHubClient
 {
-    Task Joined(string message);
+    Task Joined(List<List<Piece?>> pieces);
     Task Left(string message);
     Task Moved(Coordinate source, Coordinate destination, bool turn);
 }

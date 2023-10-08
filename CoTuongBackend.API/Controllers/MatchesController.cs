@@ -17,7 +17,7 @@ public class MatchesController : ControllerBase
     [HttpGet("move")]
     public async Task<IActionResult> Move()
     {
-        await _gameHub.Clients.All.Moved("Toi da di nuoc nay bang api");
+        //await _gameHub.Clients.All.Moved("Toi da di nuoc nay bang api");
         return NoContent();
     }
 }

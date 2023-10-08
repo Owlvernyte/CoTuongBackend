@@ -7,29 +7,24 @@ public class GameHub : Hub<IGameHubClient>
 {
     public static Dictionary<string, Board> Boards { get; set; } = new Dictionary<string, Board>
     {
-        ["RoomId"] = new Board
-        {
-            Squares = new Piece?[9, 10]
-            {
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-                { null, null, null, null, null, null, null, null, null, null},
-            }
-        }
+        ["RoomId"] = new Board(),
     };
     public override Task OnConnectedAsync()
     {
         // Room Id
+        var httpContext = Context.GetHttpContext();
+        if (httpContext == null)
+            return Task.CompletedTask;
+        if (!httpContext.Request.Query
+            .TryGetValue("roomId", out var roomId))
+            return Task.CompletedTask;
+
+        var board = Boards[roomId.ToString()];
+
 
         Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da ket noi vao hub");
 
-        Clients.All.Joined("Nguoi choi " + Context.ConnectionId + " da tham gia phong!");
+        Clients.All.Joined(board.GetPieceMatrix());
 
         return base.OnConnectedAsync();
     }
