@@ -38,4 +38,6 @@ app.MapControllers();
 
 app.MapHub<GameHub>("hubs/game");
 
+app.MapHub<ChatHub>("hubs/chat");
+
 app.Run();
