@@ -17,23 +17,39 @@ public class GameHub : Hub<IGameHubClient>
         // Room Id
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
-            return Task.CompletedTask;
+            return base.OnConnectedAsync();
         if (!httpContext.Request.Query
-            .TryGetValue("roomId", out var roomId))
-            return Task.CompletedTask;
+            .TryGetValue("roomId", out var roomIdStringValues))
+            return base.OnConnectedAsync();
 
-        var board = Boards[roomId.ToString()];
+        var roomId = roomIdStringValues.ToString();
+
+        var board = Boards[roomId];
 
 
         Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da ket noi vao hub");
 
-        Clients.All.Joined(board.GetPieceMatrix());
+        Groups.AddToGroupAsync(Context.ConnectionId, roomId);
+
+        Clients.Group(roomId).Joined(board.GetPieceMatrix());
 
         return base.OnConnectedAsync();
     }
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ngat ket noi");
+
+        // Room Id
+        var httpContext = Context.GetHttpContext();
+        if (httpContext == null)
+            return base.OnDisconnectedAsync(exception);
+        if (!httpContext.Request.Query
+            .TryGetValue("roomId", out var roomIdStringValues))
+            return base.OnDisconnectedAsync(exception);
+
+        var roomId = roomIdStringValues.ToString();
+
+        Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
 
         Clients.All.Left("Nguoi choi " + Context.ConnectionId + " da roi phong!");
 
@@ -61,7 +77,7 @@ public class GameHub : Hub<IGameHubClient>
             return Task.CompletedTask;
         }
 
-        Clients.All.Moved(source, destination, !piece.IsRed);
+        Clients.Group(roomId).Moved(source, destination, !piece.IsRed);
 
         return Task.CompletedTask;
     }
