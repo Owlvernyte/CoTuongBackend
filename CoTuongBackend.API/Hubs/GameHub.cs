@@ -1,8 +1,11 @@
-﻿using CoTuongBackend.Domain.Entities.Games;
+﻿using CoTuongBackend.Application.Games.Dtos;
+using CoTuongBackend.Domain.Entities.Games;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace CoTuongBackend.API.Hubs;
 
+[Authorize]
 public class GameHub : Hub<IGameHubClient>
 {
     public static Dictionary<string, Board> Boards { get; set; } = new Dictionary<string, Board>
@@ -30,29 +33,35 @@ public class GameHub : Hub<IGameHubClient>
     }
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da ngat ket noi");
+        Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ngat ket noi");
 
         Clients.All.Left("Nguoi choi " + Context.ConnectionId + " da roi phong!");
 
         return base.OnDisconnectedAsync(exception);
     }
-    public Task Move(Coordinate source, Coordinate destination)
+    public Task Move(MovePieceDto movePieceDto)
     {
-        var roomId = "RoomId";
+        var (roomId, source, destination) = movePieceDto;
 
         var board = Boards[roomId];
 
         var piece = board.GetPiece(source);
 
-        if (piece is null) return Task.CompletedTask;
+        if (piece is null)
+        {
+            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return Task.CompletedTask;
+        }
 
         var isValid = board.Move(piece, destination);
 
-        if (!isValid) return Task.CompletedTask;
+        if (!isValid)
+        {
+            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return Task.CompletedTask;
+        }
 
-        Console.WriteLine(source + " " + destination);
-
-        Clients.All.Moved(source, destination, piece.IsRed);
+        Clients.All.Moved(source, destination, !piece.IsRed);
 
         return Task.CompletedTask;
     }

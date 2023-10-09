@@ -4,9 +4,11 @@ namespace CoTuongBackend.Domain.Entities.Games;
 
 public class Board
 {
-    public int Columns { get; set; } = 9;
-    public int Rows { get; set; } = 10;
-    public Piece?[,] Squares { get; set; } = new Piece?[10, 9];
+    public const int DefaultColumns = 9;
+    public const int DefaultRows = 10;
+    public int Columns { get; set; } = DefaultColumns;
+    public int Rows { get; set; } = DefaultRows;
+    public Piece?[,] Squares { get; set; } = new Piece?[DefaultRows, DefaultColumns];
     public Board()
         => Squares = (Piece?[,])DefaultPieces.Clone();
     public static Board GetDefault()
@@ -16,19 +18,40 @@ public class Board
             Squares = (Piece?[,])DefaultPieces.Clone()
         };
     }
-    public static Piece?[,] DefaultPieces => new Piece?[,]
+    public static Piece?[,] DefaultPieces
     {
-        { new Chariot { IsRed = true }, new Horse { IsRed = true }, new Elephant { IsRed = true }, new Advisor { IsRed = true }, new General { IsRed = true }, new Advisor { IsRed = true }, new Elephant { IsRed = true }, new Horse { IsRed = true }, new Chariot { IsRed = true }},
-        { null, null, null, null, null, null, null, null, null},
-        { null, new Cannon { IsRed = true }, null, null, null, null, null, new Cannon { IsRed = true }, null},
-        { null, null, null, null, null, null, null, null, null},
-        { new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }},
-        { null, null, null, null, null, null, null, null, null},
-        { new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier()},
-        { null, new Cannon(), null, null, null, null, null, new Cannon(), null},
-        { null, null, null, null, null, null, null, null, null},
-        { new Chariot(), new Horse(), new Elephant(), new Advisor(), new General(), new Advisor(), new Elephant(), new Horse(), new Chariot()},
-    };
+        get
+        {
+            var initBoard = new Piece?[,]
+            {
+                { new Chariot { IsRed = true }, new Horse { IsRed = true }, new Elephant { IsRed = true }, new Advisor { IsRed = true }, new General { IsRed = true }, new Advisor { IsRed = true }, new Elephant { IsRed = true }, new Horse { IsRed = true }, new Chariot { IsRed = true }},
+                { null, null, null, null, null, null, null, null, null},
+                { null, new Cannon { IsRed = true }, null, null, null, null, null, new Cannon { IsRed = true }, null},
+                { null, null, null, null, null, null, null, null, null},
+                { new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }},
+                { null, null, null, null, null, null, null, null, null},
+                { new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier()},
+                { null, new Cannon(), null, null, null, null, null, new Cannon(), null},
+                { null, null, null, null, null, null, null, null, null},
+                { new Chariot(), new Horse(), new Elephant(), new Advisor(), new General(), new Advisor(), new Elephant(), new Horse(), new Chariot()},
+            };
+
+            for (int row = 0; row < DefaultRows; row++)
+            {
+                for (int col = 0; col < DefaultColumns; col++)
+                {
+                    var piece = initBoard[row, col];
+                    if (piece != null)
+                    {
+                        piece.Coord = new Coordinate(row, col);
+                        initBoard[row, col] = piece;
+                    }
+                }
+            }
+
+            return initBoard;
+        }
+    }
 
     public Board Reset()
     {
