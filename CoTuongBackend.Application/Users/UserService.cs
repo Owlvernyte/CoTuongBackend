@@ -18,7 +18,7 @@ public class UserService : IUserService
         _userManager = userManager;
         _tokenService = tokenService;
     }
-    public async Task<AccountDTO> Login(string userNameOrEmail, string password)
+    public async Task<AccountDto> Login(string userNameOrEmail, string password)
     {
         if (!(await _userManager.Users.AnyAsync(u => u.UserName == userNameOrEmail)) && !(await _userManager.Users.AnyAsync(u => u.Email == userNameOrEmail)))
         {
@@ -28,7 +28,7 @@ public class UserService : IUserService
         var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
         if (await _userManager.CheckPasswordAsync(user!, password))
         {
-            return new AccountDTO
+            return new AccountDto
             {
                 Id = user!.Id,
                 UserName = user.UserName!,
@@ -39,7 +39,7 @@ public class UserService : IUserService
         throw new UnauthorizedAccessException();
     }
 
-    public async Task<AccountDTO> Register(string userName, string email, string password, string confirmPassword)
+    public async Task<AccountDto> Register(string userName, string email, string password, string confirmPassword)
     {
         var validationFailures = new List<ValidationFailure>();
 
@@ -72,7 +72,7 @@ public class UserService : IUserService
 
         if (result.Succeeded)
         {
-            return new AccountDTO
+            return new AccountDto
             {
                 Id = user.Id,
                 UserName = user.UserName,
@@ -83,7 +83,7 @@ public class UserService : IUserService
 
         throw new InvalidOperationException();
     }
-    public async Task<AccountDTO> ChangePassword(string userNameOrEmail, string newPassword, string confirmPassword, string oldPassword)
+    public async Task<AccountDto> ChangePassword(string userNameOrEmail, string newPassword, string confirmPassword, string oldPassword)
     {
         var validationFailures = new List<ValidationFailure>();
 
@@ -103,7 +103,7 @@ public class UserService : IUserService
         {
             await _userManager.RemovePasswordAsync(user!);
             await _userManager.AddPasswordAsync(user!, newPassword);
-            return new AccountDTO
+            return new AccountDto
             {
                 Id = user!.Id,
                 UserName = user.UserName!,
