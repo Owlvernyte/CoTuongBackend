@@ -1,5 +1,7 @@
 ﻿using CoTuongBackend.API.Hubs;
+using CoTuongBackend.Domain.Entities.Games;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace CoTuongBackend.API.Controllers;
 
@@ -14,7 +16,31 @@ public class RoomsController : ControllerBase
         return Ok(GameHub.Boards.Select(x => new
         {
             RoomId = x.Key,
-            Squares = x.Value
+            Squares = ConvertToBoardArray(x.Value.Squares)
         }).ToList());
     }
+    public static string[] ConvertToBoardArray(List<List<Piece?>> initSquares)
+    {
+        var boardArray = new List<string>();
+
+        foreach (var row in initSquares)
+        {
+            var sb = new StringBuilder();
+            foreach (var piece in row)
+            {
+                if (piece == null)
+                {
+                    sb.Append("__");
+                }
+                else
+                {
+                    sb.Append(piece.Signature + "_");
+                }
+            }
+            boardArray.Add(sb.ToString().TrimEnd());
+        }
+
+        return boardArray.ToArray();
+    }
+
 }
