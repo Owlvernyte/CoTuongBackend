@@ -27,7 +27,12 @@ public class GameHub : Hub<IGameHubClient>
         // Check Room in Boards
         var hasRoom = Boards.TryGetValue(roomId, out var board);
 
-        if (!hasRoom) return base.OnConnectedAsync();
+        if (!hasRoom)
+        {
+            Boards.Add(roomId, new Board());
+
+            board = Boards[roomId];
+        }
 
         if (board is null) return base.OnConnectedAsync();
 
