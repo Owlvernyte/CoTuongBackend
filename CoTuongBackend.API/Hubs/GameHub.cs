@@ -37,7 +37,7 @@ public class GameHub : Hub<IGameHubClient>
         if (board is null) return base.OnConnectedAsync();
 
         // Send Board info to group
-        Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da ket noi vao hub");
+        Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ket noi vao hub");
 
         Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 
@@ -62,7 +62,7 @@ public class GameHub : Hub<IGameHubClient>
         // Remove the user out the group
         Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
 
-        Clients.All.Left("Nguoi choi " + Context.ConnectionId + " da roi phong!");
+        Clients.All.Left($"Nguoi choi {Context.ConnectionId} da roi phong!");
 
         return base.OnDisconnectedAsync(exception);
     }
