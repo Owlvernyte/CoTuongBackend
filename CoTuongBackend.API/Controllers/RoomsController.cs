@@ -37,7 +37,7 @@ public class RoomsController : ControllerBase
                     sb.Append(piece.Signature + "_");
                 }
             }
-            boardArray.Add(sb.ToString().TrimEnd());
+            boardArray.Add(sb.ToString()[..(sb.Length - 1)]);
         }
 
         return boardArray.ToArray();
