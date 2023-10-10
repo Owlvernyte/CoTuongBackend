@@ -1,5 +1,6 @@
 ﻿using CoTuongBackend.API.Filters;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 namespace CoTuongBackend.API;
 
@@ -10,7 +11,11 @@ public static class ConfigureServices
         services.AddControllers(options =>
         {
             options.Filters.Add<ApiExceptionFilterAttribute>();
-        });
+        })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(

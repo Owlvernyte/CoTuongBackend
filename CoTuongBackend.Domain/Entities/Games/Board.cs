@@ -8,55 +8,44 @@ public class Board
     public const int DefaultRows = 10;
     public int Columns { get; set; } = DefaultColumns;
     public int Rows { get; set; } = DefaultRows;
-    public Piece?[,] Squares { get; set; } = new Piece?[DefaultRows, DefaultColumns];
+    public List<List<Piece?>> Squares { get; set; } = new List<List<Piece?>>();
     public Board()
-        => Squares = (Piece?[,])DefaultPieces.Clone();
-    public static Board GetDefault()
-    {
-        return new()
-        {
-            Squares = (Piece?[,])DefaultPieces.Clone()
-        };
-    }
-    public static Piece?[,] DefaultPieces
-    {
-        get
-        {
-            var initBoard = new Piece?[,]
-            {
-                { new Chariot { IsRed = true }, new Horse { IsRed = true }, new Elephant { IsRed = true }, new Advisor { IsRed = true }, new General { IsRed = true }, new Advisor { IsRed = true }, new Elephant { IsRed = true }, new Horse { IsRed = true }, new Chariot { IsRed = true }},
-                { null, null, null, null, null, null, null, null, null},
-                { null, new Cannon { IsRed = true }, null, null, null, null, null, new Cannon { IsRed = true }, null},
-                { null, null, null, null, null, null, null, null, null},
-                { new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }},
-                { null, null, null, null, null, null, null, null, null},
-                { new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier()},
-                { null, new Cannon(), null, null, null, null, null, new Cannon(), null},
-                { null, null, null, null, null, null, null, null, null},
-                { new Chariot(), new Horse(), new Elephant(), new Advisor(), new General(), new Advisor(), new Elephant(), new Horse(), new Chariot()},
-            };
+        => Squares = GetDefaultSquares();
 
-            for (int row = 0; row < DefaultRows; row++)
+    public static List<List<Piece?>> GetDefaultSquares()
+    {
+        var initSquares = new List<List<Piece?>>()
+        {
+                new List<Piece?> { new Chariot { IsRed = false }, new Horse { IsRed = false }, new Elephant { IsRed = false }, new Advisor { IsRed = false }, new General { IsRed = false }, new Advisor { IsRed = false }, new Elephant { IsRed = false }, new Horse { IsRed = false }, new Chariot { IsRed = false }},
+                new List<Piece?> { null, null, null, null, null, null, null, null, null},
+                new List<Piece?> { null, new Cannon { IsRed = false }, null, null, null, null, null, new Cannon { IsRed = false }, null},
+                new List<Piece?> { null, null, null, null, null, null, null, null, null},
+                new List<Piece?> { new Soldier { IsRed = false }, null, new Soldier { IsRed = false }, null, new Soldier { IsRed = false }, null, new Soldier { IsRed = false }, null, new Soldier { IsRed = false }},
+                new List<Piece?> { null, null, null, null, null, null, null, null, null},
+                new List<Piece?> { new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier()},
+                new List<Piece?> { null, new Cannon(), null, null, null, null, null, new Cannon(), null},
+                new List<Piece?> { null, null, null, null, null, null, null, null, null},
+                new List<Piece?> { new Chariot(), new Horse(), new Elephant(), new Advisor(), new General(), new Advisor(), new Elephant(), new Horse(), new Chariot()},
+        };
+
+        for (int i = 0; i < initSquares.Count; i++)
+        {
+            for (int j = 0; j < initSquares[i].Count; j++)
             {
-                for (int col = 0; col < DefaultColumns; col++)
+                var piece = initSquares[i][j];
+                if (piece is { })
                 {
-                    var piece = initBoard[row, col];
-                    if (piece != null)
-                    {
-                        piece.Coord = new Coordinate(row, col);
-                        initBoard[row, col] = piece;
-                    }
+                    piece.Coord = new Coordinate(i, j);
                 }
             }
-
-            return initBoard;
         }
+
+        return initSquares;
     }
 
     public Board Reset()
     {
-        Squares = (Piece?[,])DefaultPieces.Clone();
-
+        Squares = GetDefaultSquares();
         return this;
     }
     public List<List<Piece?>> GetPieceMatrix()
@@ -67,7 +56,7 @@ public class Board
             var rowList = new List<Piece?>();
             for (int j = 0; j < Columns; j++)
             {
-                rowList.Add(Squares[i, j]);
+                rowList.Add(Squares[i][j]);
             }
             pieces.Add(rowList!);
         }
@@ -79,15 +68,15 @@ public class Board
         var isValid = sourcePiece.IsValidMove(destination, this);
         if (!isValid) return false;
 
-        Squares[sourcePiece.Coord!.X, sourcePiece.Coord.Y] = null;
+        Squares[sourcePiece.Coord!.X][sourcePiece.Coord.Y] = null;
 
         sourcePiece.Coord = destination;
 
-        Squares[destination.X, destination.Y] = sourcePiece;
+        Squares[destination.X][destination.Y] = sourcePiece;
 
         return true;
     }
 
     public Piece? GetPiece(Coordinate coordinate)
-        => Squares[coordinate.X, coordinate.Y];
+        => Squares[coordinate.X][coordinate.Y];
 }

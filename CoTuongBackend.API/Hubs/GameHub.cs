@@ -14,7 +14,7 @@ public class GameHub : Hub<IGameHubClient>
     };
     public override Task OnConnectedAsync()
     {
-        // Room Id
+        // Get Room Id
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
             return base.OnConnectedAsync();
@@ -24,14 +24,24 @@ public class GameHub : Hub<IGameHubClient>
 
         var roomId = roomIdStringValues.ToString();
 
-        var board = Boards[roomId];
+        // Check Room in Boards
+        var hasRoom = Boards.TryGetValue(roomId, out var board);
 
+        if (!hasRoom)
+        {
+            Boards.Add(roomId, new Board());
 
-        Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da ket noi vao hub");
+            board = Boards[roomId];
+        }
+
+        if (board is null) return base.OnConnectedAsync();
+
+        // Send Board info to group
+        Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ket noi vao hub");
 
         Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 
-        Clients.Group(roomId).Joined(board.GetPieceMatrix());
+        Clients.Group(roomId).Joined(board.Squares);
 
         return base.OnConnectedAsync();
     }
@@ -39,7 +49,7 @@ public class GameHub : Hub<IGameHubClient>
     {
         Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ngat ket noi");
 
-        // Room Id
+        // Get Room Id
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
             return base.OnDisconnectedAsync(exception);
@@ -49,9 +59,10 @@ public class GameHub : Hub<IGameHubClient>
 
         var roomId = roomIdStringValues.ToString();
 
+        // Remove the user out the group
         Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
 
-        Clients.All.Left("Nguoi choi " + Context.ConnectionId + " da roi phong!");
+        Clients.Group(roomId).Left($"Nguoi choi {Context.ConnectionId} da roi phong!");
 
         return base.OnDisconnectedAsync(exception);
     }
@@ -59,7 +70,19 @@ public class GameHub : Hub<IGameHubClient>
     {
         var (roomId, source, destination) = movePieceDto;
 
-        var board = Boards[roomId];
+        var hasRoom = Boards.TryGetValue(roomId, out var board);
+
+        if (!hasRoom)
+        {
+            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return Task.CompletedTask;
+        }
+
+        if (board is null)
+        {
+            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return Task.CompletedTask;
+        }
 
         var piece = board.GetPiece(source);
 

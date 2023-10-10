@@ -17,9 +17,16 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.EnableDeepLinking();
+    options.EnableFilter();
+    options.EnableValidator();
+    options.EnableTryItOutByDefault();
+    options.EnablePersistAuthorization();
+});
 
 if (app.Environment.IsDevelopment())
 {
