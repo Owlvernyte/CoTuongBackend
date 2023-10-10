@@ -16,7 +16,6 @@ namespace CoTuongBackend.API.Hubs
         {
             Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da ngat ket noi");
 
-            Clients.All.Left("Nguoi choi " + Context.ConnectionId + " da roi phong!");
 
             return base.OnDisconnectedAsync(exception);
         }
