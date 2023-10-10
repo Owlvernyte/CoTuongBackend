@@ -11,6 +11,10 @@ public class RoomsController : ControllerBase
     public async Task<IActionResult> Get()
     {
         await Task.Delay(0);
-        return Ok(GameHub.Boards.Select(x => x.Key).ToList());
+        return Ok(GameHub.Boards.Select(x => new
+        {
+            RoomId = x.Key,
+            Squares = x.Value
+        }).ToList());
     }
 }

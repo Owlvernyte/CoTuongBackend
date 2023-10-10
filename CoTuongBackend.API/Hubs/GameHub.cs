@@ -41,7 +41,7 @@ public class GameHub : Hub<IGameHubClient>
 
         Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 
-        Clients.Group(roomId).Joined(board.GetPieceMatrix());
+        Clients.Group(roomId).Joined(board.Squares);
 
         return base.OnConnectedAsync();
     }
@@ -62,7 +62,7 @@ public class GameHub : Hub<IGameHubClient>
         // Remove the user out the group
         Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
 
-        Clients.All.Left($"Nguoi choi {Context.ConnectionId} da roi phong!");
+        Clients.Group(roomId).Left($"Nguoi choi {Context.ConnectionId} da roi phong!");
 
         return base.OnDisconnectedAsync(exception);
     }

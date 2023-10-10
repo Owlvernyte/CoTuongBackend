@@ -13,7 +13,8 @@ public class Board
         => Squares = GetDefaultSquares();
 
     public static List<List<Piece?>> GetDefaultSquares()
-        => new()
+    {
+        var initSquares = new List<List<Piece?>>()
         {
                 new List<Piece?> { new Chariot { IsRed = false }, new Horse { IsRed = false }, new Elephant { IsRed = false }, new Advisor { IsRed = false }, new General { IsRed = false }, new Advisor { IsRed = false }, new Elephant { IsRed = false }, new Horse { IsRed = false }, new Chariot { IsRed = false }},
                 new List<Piece?> { null, null, null, null, null, null, null, null, null},
@@ -26,6 +27,21 @@ public class Board
                 new List<Piece?> { null, null, null, null, null, null, null, null, null},
                 new List<Piece?> { new Chariot(), new Horse(), new Elephant(), new Advisor(), new General(), new Advisor(), new Elephant(), new Horse(), new Chariot()},
         };
+
+        for (int i = 0; i < initSquares.Count; i++)
+        {
+            for (int j = 0; j < initSquares[i].Count; j++)
+            {
+                var piece = initSquares[i][j];
+                if (piece is { })
+                {
+                    piece.Coord = new Coordinate(i, j);
+                }
+            }
+        }
+
+        return initSquares;
+    }
 
     public Board Reset()
     {
