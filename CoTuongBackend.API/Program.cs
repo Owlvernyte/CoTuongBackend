@@ -19,7 +19,14 @@ if (app.Environment.IsDevelopment())
 {
 }
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(options =>
+{
+    options.EnableDeepLinking();
+    options.EnableFilter();
+    options.EnableValidator();
+    options.EnableTryItOutByDefault();
+    options.EnablePersistAuthorization();
+});
 
 if (app.Environment.IsDevelopment())
 {
