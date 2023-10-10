@@ -24,11 +24,11 @@ public class Board
         {
             var initBoard = new Piece?[,]
             {
-                { new Chariot { IsRed = true }, new Horse { IsRed = true }, new Elephant { IsRed = true }, new Advisor { IsRed = true }, new General { IsRed = true }, new Advisor { IsRed = true }, new Elephant { IsRed = true }, new Horse { IsRed = true }, new Chariot { IsRed = true }},
+                { new Chariot { IsRed = false }, new Horse { IsRed = false }, new Elephant { IsRed = false }, new Advisor { IsRed = false }, new General { IsRed = false }, new Advisor { IsRed = false }, new Elephant { IsRed = false }, new Horse { IsRed = false }, new Chariot { IsRed = false }},
                 { null, null, null, null, null, null, null, null, null},
-                { null, new Cannon { IsRed = true }, null, null, null, null, null, new Cannon { IsRed = true }, null},
+                { null, new Cannon { IsRed = false }, null, null, null, null, null, new Cannon { IsRed = false }, null},
                 { null, null, null, null, null, null, null, null, null},
-                { new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }, null, new Soldier { IsRed = true }},
+                { new Soldier { IsRed = false }, null, new Soldier { IsRed = false }, null, new Soldier { IsRed = false }, null, new Soldier { IsRed = false }, null, new Soldier { IsRed = false }},
                 { null, null, null, null, null, null, null, null, null},
                 { new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier(), null, new Soldier()},
                 { null, new Cannon(), null, null, null, null, null, new Cannon(), null},
