@@ -28,7 +28,7 @@ public class RoomsController : ControllerBase
             var sb = new StringBuilder();
             foreach (var piece in row)
             {
-                if (piece == null)
+                if (piece is null)
                 {
                     sb.Append("__");
                 }
