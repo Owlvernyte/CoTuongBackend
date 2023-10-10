@@ -72,9 +72,17 @@ public class GameHub : Hub<IGameHubClient>
 
         var hasRoom = Boards.TryGetValue(roomId, out var board);
 
-        if (!hasRoom) return Task.CompletedTask;
+        if (!hasRoom)
+        {
+            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return Task.CompletedTask;
+        }
 
-        if (board is null) return Task.CompletedTask;
+        if (board is null)
+        {
+            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return Task.CompletedTask;
+        }
 
         var piece = board.GetPiece(source);
 
