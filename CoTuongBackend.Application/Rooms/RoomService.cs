@@ -86,7 +86,9 @@ public sealed class RoomService : IRoomService
             .SingleOrDefaultAsync(x => x.Id == joinRoomDto.UserId)
             ?? throw new NotFoundException(typeof(ApplicationUser).Name, joinRoomDto.UserId);
 
-        room.RoomUsers.Add(new RoomUser { User = user });
+        room.CountUser += 1;
+
+        room.RoomUsers.Add(new RoomUser { User = user, IsPlayer = !room.RoomUsers.Any() });
 
         await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
     }

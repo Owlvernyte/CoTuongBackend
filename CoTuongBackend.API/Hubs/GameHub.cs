@@ -19,9 +19,7 @@ public class GameHub : Hub<IGameHubClient>
         _roomService = roomService;
         _userAccessor = userAccessor;
     }
-    public static Dictionary<string, Board> Boards { get; set; } = new Dictionary<string, Board>
-    {
-    };
+    public static Dictionary<string, Board> Boards { get; set; } = new();
     public override async Task OnConnectedAsync()
     {
         // Get Room Code
