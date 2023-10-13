@@ -1,5 +1,6 @@
 ﻿using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Interfaces;
+using CoTuongBackend.Domain.Services;
 using CoTuongBackend.Infrastructure.Persistence;
 using CoTuongBackend.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,6 +62,7 @@ public static class ConfigureServices
         services.AddScoped<ApplicationDbContextInitializer>();
 
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUserAccessor, UserAccessor>();
 
         return services;
     }

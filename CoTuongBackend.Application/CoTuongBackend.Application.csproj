@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CoTuongBackend.Domain\CoTuongBackend.Domain.csproj" />
+    <ProjectReference Include="..\CoTuongBackend.Infrastructure\CoTuongBackend.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

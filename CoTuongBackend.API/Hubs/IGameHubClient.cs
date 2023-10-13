@@ -1,11 +1,13 @@
-﻿using CoTuongBackend.Domain.Entities.Games;
+﻿using CoTuongBackend.Application.Users;
+using CoTuongBackend.Domain.Entities.Games;
 
 namespace CoTuongBackend.API.Hubs;
 
 public interface IGameHubClient
 {
-    Task Joined(List<List<Piece?>> squares);
-    Task Left(string message);
+    Task LoadBoard(List<List<Piece?>> squares);
+    Task Joined(UserDto userDto);
+    Task Left(UserDto userDto);
     Task Moved(Coordinate source, Coordinate destination, bool turn);
     Task MoveFailed(Coordinate source, Coordinate destination);
 }

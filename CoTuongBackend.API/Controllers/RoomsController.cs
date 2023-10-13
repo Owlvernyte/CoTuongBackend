@@ -1,6 +1,10 @@
 ﻿using CoTuongBackend.API.Hubs;
+using CoTuongBackend.Application.Rooms;
+using CoTuongBackend.Application.Rooms.Dtos;
 using CoTuongBackend.Domain.Entities.Games;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace CoTuongBackend.API.Controllers;
@@ -9,15 +13,44 @@ namespace CoTuongBackend.API.Controllers;
 [ApiController]
 public class RoomsController : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> Get()
+    private readonly IRoomService _roomService;
+
+    public RoomsController(IRoomService roomService)
     {
-        await Task.Delay(0);
-        return Ok(GameHub.Boards.Select(x => new
+        _roomService = roomService;
+    }
+
+    [HttpPost("join")]
+    public async Task<IActionResult> Join(JoinRoomDto request)
+    {
+        await _roomService.Join(request).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post(CreateRoomDto request)
+    {
+        var roomId = await _roomService.Create(request);
+        var roomDto = await _roomService.Get(roomId);
+
+        var domain = HttpContext.Request.GetDisplayUrl();
+        var routeTemplate = ControllerContext.ActionDescriptor.AttributeRouteInfo!.Template;
+
+        return Created($"{domain}/{routeTemplate}/{roomId}", roomDto);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<ImmutableList<RoomDto>>> Get()
+    {
+        var roomDtos = await _roomService.Get();
+        foreach (var roomDto in roomDtos)
         {
-            RoomId = x.Key,
-            Squares = ConvertToBoardArray(x.Value.Squares)
-        }).ToList());
+            var hasBoard = GameHub.Boards.TryGetValue(roomDto.Code, out var board);
+            if (!hasBoard) continue;
+            if (board is null) continue;
+            roomDto.Board = ConvertToBoardArray(board.Squares);
+        }
+        return Ok(roomDtos);
     }
     public static string[] ConvertToBoardArray(List<List<Piece?>> initSquares)
     {

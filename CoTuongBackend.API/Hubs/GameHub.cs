@@ -1,5 +1,8 @@
 ﻿using CoTuongBackend.Application.Games.Dtos;
+using CoTuongBackend.Application.Rooms;
+using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities.Games;
+using CoTuongBackend.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -8,61 +11,74 @@ namespace CoTuongBackend.API.Hubs;
 [Authorize]
 public class GameHub : Hub<IGameHubClient>
 {
+    private readonly IRoomService _roomService;
+    private readonly IUserAccessor _userAccessor;
+
+    public GameHub(IRoomService roomService, IUserAccessor userAccessor)
+    {
+        _roomService = roomService;
+        _userAccessor = userAccessor;
+    }
     public static Dictionary<string, Board> Boards { get; set; } = new Dictionary<string, Board>
     {
-        ["RoomId"] = new Board(),
     };
-    public override Task OnConnectedAsync()
+    public override async Task OnConnectedAsync()
     {
-        // Get Room Id
+        // Get Room Code
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
-            return base.OnConnectedAsync();
+            return;
         if (!httpContext.Request.Query
-            .TryGetValue("roomId", out var roomIdStringValues))
-            return base.OnConnectedAsync();
+            .TryGetValue("roomCode", out var roomCodeStringValues))
+            return;
 
-        var roomId = roomIdStringValues.ToString();
+        var roomCode = roomCodeStringValues.ToString();
+
+        var isExists = await _roomService.IsExists(x => x.Code == roomCode);
 
         // Check Room in Boards
-        var hasRoom = Boards.TryGetValue(roomId, out var board);
+        var hasRoom = Boards.TryGetValue(roomCode, out var board);
 
         if (!hasRoom)
         {
-            Boards.Add(roomId, new Board());
+            Boards.Add(roomCode, new Board());
 
-            board = Boards[roomId];
+            board = Boards[roomCode];
         }
 
-        if (board is null) return base.OnConnectedAsync();
+        if (board is null) return;
 
         // Send Board info to group
         Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ket noi vao hub");
 
-        Groups.AddToGroupAsync(Context.ConnectionId, roomId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-        Clients.Group(roomId).Joined(board.Squares);
+        await Clients.Client(Context.ConnectionId).LoadBoard(board.Squares);
 
-        return base.OnConnectedAsync();
+        await Clients.Group(roomCode)
+            .Joined(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
+
+        return;
     }
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ngat ket noi");
 
-        // Get Room Id
+        // Get Room Code
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
             return base.OnDisconnectedAsync(exception);
         if (!httpContext.Request.Query
-            .TryGetValue("roomId", out var roomIdStringValues))
+            .TryGetValue("roomCode", out var roomCodeStringValues))
             return base.OnDisconnectedAsync(exception);
 
-        var roomId = roomIdStringValues.ToString();
+        var roomCode = roomCodeStringValues.ToString();
 
         // Remove the user out the group
-        Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
+        Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
 
-        Clients.Group(roomId).Left($"Nguoi choi {Context.ConnectionId} da roi phong!");
+        Clients.Group(roomCode)
+            .Left(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
 
         return base.OnDisconnectedAsync(exception);
     }

@@ -4,12 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CoTuongBackend.Infrastructure.Persistence.Configurations;
 
-public class RoomConfiguration : IEntityTypeConfiguration<Room>
+public class RoomUserConfiguration : IEntityTypeConfiguration<RoomUser>
 {
-    public void Configure(EntityTypeBuilder<Room> builder)
+    public void Configure(EntityTypeBuilder<RoomUser> builder)
     {
         builder
-            .Property(r => r.CountUser)
-            .HasDefaultValue(1);
+            .HasKey(x => new { x.UserId, x.RoomId });
     }
 }

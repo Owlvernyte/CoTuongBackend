@@ -46,6 +46,7 @@ public static class ConfigureServices
             });
 
         services.AddSignalR();
+        services.AddHttpContextAccessor();
 
         return services;
     }
