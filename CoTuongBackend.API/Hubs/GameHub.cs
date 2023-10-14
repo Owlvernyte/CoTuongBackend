@@ -84,9 +84,9 @@ public class GameHub : Hub<IGameHubClient>
     }
     public Task Move(MovePieceDto movePieceDto)
     {
-        var (roomId, source, destination) = movePieceDto;
+        var (roomCode, source, destination) = movePieceDto;
 
-        var hasRoom = Boards.TryGetValue(roomId, out var board);
+        var hasRoom = Boards.TryGetValue(roomCode, out var board);
 
         if (!hasRoom)
         {
@@ -116,7 +116,7 @@ public class GameHub : Hub<IGameHubClient>
             return Task.CompletedTask;
         }
 
-        Clients.Group(roomId).Moved(source, destination, !piece.IsRed);
+        Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
 
         return Task.CompletedTask;
     }
