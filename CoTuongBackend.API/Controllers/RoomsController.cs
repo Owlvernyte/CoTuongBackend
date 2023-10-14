@@ -59,6 +59,17 @@ public class RoomsController : ControllerBase
         }
         return Ok(roomDtos);
     }
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<RoomDto>> Get(Guid id)
+    {
+        var roomDto = await _roomService.Get(id);
+        var hasBoard = GameHub.Boards.TryGetValue(roomDto.Code, out var board);
+        if (hasBoard && board is { })
+        {
+            roomDto.Board = ConvertToBoardArray(board.Squares);
+        }
+        return Ok(roomDto);
+    }
     public static string[] ConvertToBoardArray(List<List<Piece?>> initSquares)
     {
         var boardArray = new List<string>();

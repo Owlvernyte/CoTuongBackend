@@ -67,7 +67,10 @@ public sealed class RoomService : IRoomService
             room.CountUser,
             room.Password,
             new UserDto(room.HostUser.Id, room.HostUser.UserName, room.HostUser.Email),
-            opponentUser);
+            opponentUser)
+        {
+            Users = room.RoomUsers.Select(x => new UserDto(x.UserId, x.User?.UserName, x.User?.Email))
+        };
 
         return roomDto;
     }
