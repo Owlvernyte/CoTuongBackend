@@ -16,11 +16,13 @@ public class GameHub : Hub<IGameHubClient>
 {
     private readonly IRoomService _roomService;
     private readonly IUserAccessor _userAccessor;
+    private readonly ILogger<GameHub> _logger;
 
-    public GameHub(IRoomService roomService, IUserAccessor userAccessor)
+    public GameHub(IRoomService roomService, IUserAccessor userAccessor, ILogger<GameHub> logger)
     {
         _roomService = roomService;
         _userAccessor = userAccessor;
+        _logger = logger;
     }
     public static Dictionary<string, Board> Boards { get; set; } = new();
     public override async Task OnConnectedAsync()
@@ -50,7 +52,7 @@ public class GameHub : Hub<IGameHubClient>
         if (board is null) return;
 
         // Send Board info to group
-        Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ket noi vao hub");
+        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ket noi vao hub", _userAccessor.UserName, Context.ConnectionId);
 
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
@@ -63,7 +65,7 @@ public class GameHub : Hub<IGameHubClient>
     }
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        Console.WriteLine($"Nguoi choi {Context.ConnectionId} da ngat ket noi");
+        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ngat ket noi", _userAccessor.UserName, Context.ConnectionId);
 
         // Get Room Code
         var httpContext = Context.GetHttpContext();
@@ -124,10 +126,9 @@ public class GameHub : Hub<IGameHubClient>
     public Task Chat(ChatMessageDto chatMessageDto)
     {
         var (roomCode, message) = chatMessageDto;
-        Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da chat " + message + " vao hub " + roomCode);
+        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da chat {Message} vao hub {RoomCode}", _userAccessor.UserName, Context.ConnectionId, message, roomCode);
 
         Clients.Group(roomCode).Chat(message, roomCode, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
-
         return Task.CompletedTask;
     }
 }
