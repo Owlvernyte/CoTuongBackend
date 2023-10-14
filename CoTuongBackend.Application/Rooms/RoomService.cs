@@ -18,17 +18,26 @@ public sealed class RoomService : IRoomService
 
     public async Task<ImmutableList<RoomDto>> Get()
     {
-        var roomDtos = await _applicationDbContext.Rooms
+        var roomDtos = (await _applicationDbContext.Rooms
             .Include(x => x.HostUser)
-            .Where(x => x.HostUserId != Guid.Empty)
-            .Where(x => x.HostUser != null)
+            .Include(x => x.RoomUsers)
+            .ThenInclude(x => x.User)
+            .Where(x => x.HostUserId != Guid.Empty
+                && x.HostUser != null)
+            .ToListAsync())
             .Select(room => new RoomDto(
-            room.Id,
-            room.Code,
-            room.CountUser,
-            room.Password,
-            new UserDto(room.HostUser!.Id, room.HostUser.UserName, room.HostUser.Email)))
-            .ToListAsync();
+                room.Id,
+                room.Code,
+                room.CountUser,
+                room.Password,
+                new UserDto(room.HostUser!.Id, room.HostUser.UserName, room.HostUser.Email),
+                room.RoomUsers.Any(x => x.IsPlayer && x.User != null)
+                    ? new UserDto(
+                        room.RoomUsers.FirstOrDefault(x => x.IsPlayer && x.User != null)!.User!.Id,
+                        room.RoomUsers.FirstOrDefault(x => x.IsPlayer && x.User != null)!.User!.UserName,
+                        room.RoomUsers.FirstOrDefault(x => x.IsPlayer && x.User != null)!.User!.Email)
+                    : null)
+            ).ToList();
 
         return roomDtos.ToImmutableList();
     }
@@ -37,6 +46,8 @@ public sealed class RoomService : IRoomService
     {
         var room = await _applicationDbContext.Rooms
             .Include(x => x.HostUser)
+            .Include(x => x.RoomUsers)
+            .ThenInclude(x => x.User)
             .SingleOrDefaultAsync(x => x.Id == id)
             ?? throw new NotFoundException(typeof(Room).Name, id);
         if (room.HostUser is null)
@@ -44,12 +55,19 @@ public sealed class RoomService : IRoomService
             throw new InvalidOperationException("Host not exist!");
         }
 
+        var opponentRoomUser = room.RoomUsers.FirstOrDefault(x => x.IsPlayer);
+
+        var opponentUser = opponentRoomUser is { User: { } }
+            ? new UserDto(opponentRoomUser.UserId, opponentRoomUser.User.UserName, opponentRoomUser.User.Email)
+            : null;
+
         var roomDto = new RoomDto(
             room.Id,
             room.Code,
             room.CountUser,
             room.Password,
-            new UserDto(room.HostUser.Id, room.HostUser.UserName, room.HostUser.Email));
+            new UserDto(room.HostUser.Id, room.HostUser.UserName, room.HostUser.Email),
+            opponentUser);
 
         return roomDto;
     }
