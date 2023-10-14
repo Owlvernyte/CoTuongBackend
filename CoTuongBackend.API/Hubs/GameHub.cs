@@ -1,4 +1,5 @@
-﻿using CoTuongBackend.Application.Games.Dtos;
+﻿using CoTuongBackend.Application.Chat.Dtos;
+using CoTuongBackend.Application.Games.Dtos;
 using CoTuongBackend.Application.Rooms;
 using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities.Games;
@@ -117,6 +118,15 @@ public class GameHub : Hub<IGameHubClient>
         }
 
         Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
+
+        return Task.CompletedTask;
+    }
+    public Task Chat(ChatMessageDto chatMessageDto)
+    {
+        var (roomCode, message) = chatMessageDto;
+        Console.WriteLine("Nguoi choi " + Context.ConnectionId + " da chat " + message + " vao hub " + roomCode);
+
+        Clients.Group(roomCode).Chat(message, roomCode, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
 
         return Task.CompletedTask;
     }
