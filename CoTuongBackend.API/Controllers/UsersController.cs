@@ -45,9 +45,9 @@ public class UsersController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("check-authorize")]
-    public async Task<ActionResult<AccountDto>> CheckAuthorize()
-        => Ok(await _userService.CheckAuthorize());
+    [HttpGet("check-authorization")]
+    public async Task<ActionResult<AccountDto>> CheckAuthorization()
+        => Ok(await _userService.CheckAuthorization());
 
     [HttpGet("users")]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()

@@ -21,7 +21,7 @@ public class UserService : IUserService
         _tokenService = tokenService;
         _userAccessor = userAccessor;
     }
-    public Task<AccountDto> CheckAuthorize()
+    public Task<AccountDto> CheckAuthorization()
     {
         return Task.FromResult(new AccountDto
         {
