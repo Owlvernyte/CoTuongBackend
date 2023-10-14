@@ -21,19 +21,19 @@ public class UsersController : ControllerBase
         _tokenService = tokenService;
     }
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto registerDTO)
+    public async Task<ActionResult<AccountDto>> Register([FromBody] RegisterDto registerDTO)
         => Ok(await _userService.Register(registerDTO.Username, registerDTO.Email, registerDTO.Password, registerDTO.ConfirmPassword));
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDTO)
+    public async Task<ActionResult<AccountDto>> Login([FromBody] LoginDto loginDTO)
         => Ok(await _userService.Login(loginDTO.UserNameOrEmail, loginDTO.Password));
 
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChagePasswordDto chagePasswordDTO)
+    public async Task<ActionResult<AccountDto>> ChangePassword([FromBody] ChagePasswordDto chagePasswordDTO)
         => Ok(await _userService.ChangePassword(chagePasswordDTO.UserNameOrEmail, chagePasswordDTO.NewPassword, chagePasswordDTO.ConfirmPassword, chagePasswordDTO.OldPassword));
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<ActionResult<string>> Get()
     {
         var firstUser = await _context.Users
             .OrderBy(x => x.CreatedAt)
