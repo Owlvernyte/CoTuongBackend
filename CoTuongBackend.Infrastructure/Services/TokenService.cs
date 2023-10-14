@@ -1,6 +1,5 @@
 ﻿using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Interfaces;
-using CoTuongBackend.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,14 +11,12 @@ namespace CoTuongBackend.Infrastructure.Services;
 public class TokenService : ITokenService
 {
     private readonly string _tokenKey;
-    private readonly ApplicationDbContext _context;
     private readonly TimeSpan _tokenLifespan;
     private readonly SigningCredentials _signingCredentials;
 
-    public TokenService(IConfiguration configuration, ApplicationDbContext context)
+    public TokenService(IConfiguration configuration)
     {
         _tokenKey = configuration["TokenKey"]!;
-        _context = context;
         _tokenLifespan = TimeSpan.FromHours(5);
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenKey));
         _signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);

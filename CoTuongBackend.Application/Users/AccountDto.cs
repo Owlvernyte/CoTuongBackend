@@ -1,6 +1,6 @@
 ﻿namespace CoTuongBackend.Application.Users;
 
-public record AccountDTO
+public record AccountDto
 {
     public Guid Id { get; set; }
     public required string UserName { get; set; }

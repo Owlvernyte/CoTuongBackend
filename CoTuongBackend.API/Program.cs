@@ -1,4 +1,5 @@
 using CoTuongBackend.API;
+using CoTuongBackend.API.Hubs;
 using CoTuongBackend.Application;
 using CoTuongBackend.Infrastructure;
 using CoTuongBackend.Infrastructure.Persistence;
@@ -16,9 +17,16 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.EnableDeepLinking();
+    options.EnableFilter();
+    options.EnableValidator();
+    options.EnableTryItOutByDefault();
+    options.EnablePersistAuthorization();
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -34,5 +42,12 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("", () => Results.Redirect("/swagger"))
+    .ExcludeFromDescription();
+
+app.MapHub<GameHub>("hubs/game");
+
+app.MapHub<ChatHub>("hubs/chat");
 
 app.Run();

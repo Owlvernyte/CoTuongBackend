@@ -3,6 +3,7 @@ using System;
 using CoTuongBackend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoTuongBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231013135127_AddRoomAndMatch")]
+    partial class AddRoomAndMatch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,6 +74,9 @@ namespace CoTuongBackend.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("RoomId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
@@ -89,6 +95,8 @@ namespace CoTuongBackend.Infrastructure.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("RoomId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -134,10 +142,6 @@ namespace CoTuongBackend.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("CountUser")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -149,6 +153,10 @@ namespace CoTuongBackend.Infrastructure.Migrations
                     b.Property<Guid>("HostUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Password")
                         .HasColumnType("text");
 
@@ -157,24 +165,6 @@ namespace CoTuongBackend.Infrastructure.Migrations
                     b.HasIndex("HostUserId");
 
                     b.ToTable("Rooms");
-                });
-
-            modelBuilder.Entity("CoTuongBackend.Domain.Entities.RoomUser", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsPlayer")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("UserId", "RoomId");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("RoomUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -307,6 +297,13 @@ namespace CoTuongBackend.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("CoTuongBackend.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.HasOne("CoTuongBackend.Domain.Entities.Room", null)
+                        .WithMany("Users")
+                        .HasForeignKey("RoomId");
+                });
+
             modelBuilder.Entity("CoTuongBackend.Domain.Entities.Match", b =>
                 {
                     b.HasOne("CoTuongBackend.Domain.Entities.ApplicationUser", "HostUser")
@@ -336,31 +333,12 @@ namespace CoTuongBackend.Infrastructure.Migrations
             modelBuilder.Entity("CoTuongBackend.Domain.Entities.Room", b =>
                 {
                     b.HasOne("CoTuongBackend.Domain.Entities.ApplicationUser", "HostUser")
-                        .WithMany()
+                        .WithMany("Rooms")
                         .HasForeignKey("HostUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("HostUser");
-                });
-
-            modelBuilder.Entity("CoTuongBackend.Domain.Entities.RoomUser", b =>
-                {
-                    b.HasOne("CoTuongBackend.Domain.Entities.Room", "Room")
-                        .WithMany("RoomUsers")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CoTuongBackend.Domain.Entities.ApplicationUser", "User")
-                        .WithMany("RoomUsers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -420,14 +398,14 @@ namespace CoTuongBackend.Infrastructure.Migrations
 
                     b.Navigation("OpponentMatches");
 
-                    b.Navigation("RoomUsers");
+                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("CoTuongBackend.Domain.Entities.Room", b =>
                 {
                     b.Navigation("Matches");
 
-                    b.Navigation("RoomUsers");
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

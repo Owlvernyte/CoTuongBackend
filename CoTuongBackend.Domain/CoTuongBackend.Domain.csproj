@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.10" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\Games\" />
+  </ItemGroup>
+
 </Project>

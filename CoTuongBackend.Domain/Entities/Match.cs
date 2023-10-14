@@ -2,7 +2,7 @@
 
 namespace CoTuongBackend.Domain.Entities;
 
-public class Match : BaseEntity<Guid>
+public class Match : BaseEntity
 {
 
     public MatchStatus Status { get; set; } = MatchStatus.Stop;

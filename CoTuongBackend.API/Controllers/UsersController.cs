@@ -21,18 +21,18 @@ public class UsersController : ControllerBase
         _tokenService = tokenService;
     }
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+    public async Task<IActionResult> Register([FromBody] RegisterDto registerDTO)
     {
         return Ok(await _userService.Register(registerDTO.Username, registerDTO.Email, registerDTO.Password, registerDTO.ConfirmPassword));
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDTO)
     {
         return Ok(await _userService.Login(loginDTO.UserNameOrEmail, loginDTO.Password));
     }
     [HttpPost("change-password")]
-    public async Task<IActionResult> CHangePassword([FromBody] ChagePasswordDTO chagePasswordDTO)
+    public async Task<IActionResult> CHangePassword([FromBody] ChagePasswordDto chagePasswordDTO)
     {
         return Ok(await _userService.ChangePassword(chagePasswordDTO.UserNameOrEmail,chagePasswordDTO.NewPassword,chagePasswordDTO.ConfirmPassword,chagePasswordDTO.OldPassword));
     }
