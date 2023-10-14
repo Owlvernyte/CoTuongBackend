@@ -1,9 +1,11 @@
-﻿namespace CoTuongBackend.API.Hubs
+﻿using CoTuongBackend.Application.Users;
+
+namespace CoTuongBackend.API.Hubs
 {
     public interface IChatHubClient
     {
-        Task Joined(string message);
-        Task Left(string message);
-        Task Chat(string message);
+        Task Joined(UserDto userDto);
+        Task Left(UserDto userDto);
+        Task Chat(string message, string roomCode, UserDto userDto);
     }
 }
