@@ -5,9 +5,11 @@ using CoTuongBackend.Domain.Entities.Games;
 using CoTuongBackend.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using SignalRSwaggerGen.Attributes;
 
 namespace CoTuongBackend.API.Hubs;
 
+[SignalRHub]
 [Authorize]
 public class GameHub : Hub<IGameHubClient>
 {

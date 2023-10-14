@@ -43,6 +43,7 @@ public static class ConfigureServices
                 };
 
                 options.AddSecurityRequirement(securityRequirement);
+                options.AddSignalRSwaggerGen();
             });
 
         services.AddSignalR();

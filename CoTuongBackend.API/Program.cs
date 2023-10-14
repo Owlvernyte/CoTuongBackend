@@ -43,6 +43,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("", () => Results.Redirect("/swagger"));
+
 app.MapHub<GameHub>("hubs/game");
 
 app.MapHub<ChatHub>("hubs/chat");
