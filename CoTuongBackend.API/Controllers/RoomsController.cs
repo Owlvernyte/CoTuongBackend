@@ -27,12 +27,12 @@ public class RoomsController : ControllerBase
         return NoContent();
     }
 
-    //[HttpPost("leave")]
-    //public async Task<IActionResult> Leave(JoinRoomDto request)
-    //{
-    //    await _roomService.Join(request).ConfigureAwait(false);
-    //    return NoContent();
-    //}
+    [HttpPost("leave")]
+    public async Task<IActionResult> Leave(LeaveRoomDto request)
+    {
+        await _roomService.Leave(request).ConfigureAwait(false);
+        return NoContent();
+    }
 
     [HttpPost]
     public async Task<IActionResult> Post(CreateRoomDto request)

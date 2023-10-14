@@ -114,4 +114,24 @@ public sealed class RoomService : IRoomService
     public async Task<bool> IsExists(Expression<Func<Room, bool>> predicate)
         => await _applicationDbContext.Rooms
         .AnyAsync(predicate);
+
+    public async Task Leave(LeaveRoomDto leaveRoomDto)
+    {
+        var room = await _applicationDbContext.Rooms
+            .Include(x => x.RoomUsers)
+            .SingleOrDefaultAsync(x => x.Code == leaveRoomDto.RoomCode)
+            ?? throw new NotFoundException(typeof(Room).Name, leaveRoomDto.RoomCode);
+
+        if (room.HostUserId == leaveRoomDto.UserId) return;
+
+        var user = room.RoomUsers.FirstOrDefault(x => x.UserId == leaveRoomDto.UserId);
+
+        if (user is null) return;
+
+        room.CountUser -= 1;
+
+        room.RoomUsers.Remove(user);
+
+        await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
 }
