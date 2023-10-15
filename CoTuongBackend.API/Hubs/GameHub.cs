@@ -1,6 +1,6 @@
-﻿using CoTuongBackend.Application.Chat.Dtos;
-using CoTuongBackend.Application.Games.Dtos;
+﻿using CoTuongBackend.Application.Games.Dtos;
 using CoTuongBackend.Application.Rooms;
+using CoTuongBackend.Application.Rooms.Dtos;
 using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities.Games;
 using CoTuongBackend.Domain.Services;
@@ -39,6 +39,15 @@ public class GameHub : Hub<IGameHubClient>
 
         var isExists = await _roomService.IsExists(x => x.Code == roomCode);
 
+        if (!isExists) return;
+
+        await _roomService.Join(new JoinRoomDto(roomCode, _userAccessor.Id));
+
+        if (!await _roomService.IsExists(x => x.OpponentUserId == _userAccessor.Id || x.HostUserId == _userAccessor.Id))
+        {
+            return;
+        }
+
         // Check Room in Boards
         var hasRoom = Boards.TryGetValue(roomCode, out var board);
 
@@ -63,31 +72,42 @@ public class GameHub : Hub<IGameHubClient>
 
         return;
     }
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ngat ket noi", _userAccessor.UserName, Context.ConnectionId);
 
         // Get Room Code
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
-            return base.OnDisconnectedAsync(exception);
+            return;
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
-            return base.OnDisconnectedAsync(exception);
+            return;
 
         var roomCode = roomCodeStringValues.ToString();
 
-        // Remove the user out the group
-        Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
+        await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
 
-        Clients.Group(roomCode)
+        // Remove the user out the group
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
+
+        await Clients.Group(roomCode)
             .Left(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
 
-        return base.OnDisconnectedAsync(exception);
+        return;
     }
     public Task Move(MovePieceDto movePieceDto)
     {
-        var (roomCode, source, destination) = movePieceDto;
+        var httpContext = Context.GetHttpContext();
+        if (httpContext == null)
+            return Task.CompletedTask; ;
+        if (!httpContext.Request.Query
+            .TryGetValue("roomCode", out var roomCodeStringValues))
+            return Task.CompletedTask; ;
+
+        var roomCode = roomCodeStringValues.ToString();
+
+        var (source, destination) = movePieceDto;
 
         var hasRoom = Boards.TryGetValue(roomCode, out var board);
 
@@ -123,12 +143,20 @@ public class GameHub : Hub<IGameHubClient>
 
         return Task.CompletedTask;
     }
-    public Task Chat(ChatMessageDto chatMessageDto)
+    public Task Chat(string message)
     {
-        var (roomCode, message) = chatMessageDto;
+        var httpContext = Context.GetHttpContext();
+        if (httpContext == null)
+            return Task.CompletedTask;
+        if (!httpContext.Request.Query
+            .TryGetValue("roomCode", out var roomCodeStringValues))
+            return Task.CompletedTask;
+
+        var roomCode = roomCodeStringValues.ToString();
+
         _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da chat {Message} vao hub {RoomCode}", _userAccessor.UserName, Context.ConnectionId, message, roomCode);
 
-        Clients.Group(roomCode).Chat(message, roomCode, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
+        Clients.Group(roomCode).Chatted(message, roomCode, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
         return Task.CompletedTask;
     }
 }

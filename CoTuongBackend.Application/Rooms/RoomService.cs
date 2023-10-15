@@ -18,26 +18,19 @@ public sealed class RoomService : IRoomService
 
     public async Task<ImmutableList<RoomDto>> Get()
     {
-        var roomDtos = (await _applicationDbContext.Rooms
+        var roomDtos = await _applicationDbContext.Rooms
             .Include(x => x.HostUser)
-            .Include(x => x.RoomUsers)
-            .ThenInclude(x => x.User)
+            .Include(x => x.OpponentUser)
             .Where(x => x.HostUserId != Guid.Empty
                 && x.HostUser != null)
-            .ToListAsync())
             .Select(room => new RoomDto(
                 room.Id,
                 room.Code,
                 room.CountUser,
                 room.Password,
                 new UserDto(room.HostUser!.Id, room.HostUser.UserName, room.HostUser.Email),
-                room.RoomUsers.Any(x => x.IsPlayer && x.User != null)
-                    ? new UserDto(
-                        room.RoomUsers.FirstOrDefault(x => x.IsPlayer && x.User != null)!.User!.Id,
-                        room.RoomUsers.FirstOrDefault(x => x.IsPlayer && x.User != null)!.User!.UserName,
-                        room.RoomUsers.FirstOrDefault(x => x.IsPlayer && x.User != null)!.User!.Email)
-                    : null)
-            ).ToList();
+                room.OpponentUser != null ? new UserDto(room.OpponentUser!.Id, room.OpponentUser.UserName, room.OpponentUser.Email) : null)
+            ).ToListAsync();
 
         return roomDtos.ToImmutableList();
     }
@@ -46,8 +39,7 @@ public sealed class RoomService : IRoomService
     {
         var room = await _applicationDbContext.Rooms
             .Include(x => x.HostUser)
-            .Include(x => x.RoomUsers)
-            .ThenInclude(x => x.User)
+            .Include(x => x.OpponentUser)
             .SingleOrDefaultAsync(x => x.Id == id)
             ?? throw new NotFoundException(typeof(Room).Name, id);
         if (room.HostUser is null)
@@ -55,10 +47,10 @@ public sealed class RoomService : IRoomService
             throw new InvalidOperationException("Host not exist!");
         }
 
-        var opponentRoomUser = room.RoomUsers.FirstOrDefault(x => x.IsPlayer);
+        var opponentRoomUser = room.OpponentUser;
 
-        var opponentUser = opponentRoomUser is { User: { } }
-            ? new UserDto(opponentRoomUser.UserId, opponentRoomUser.User.UserName, opponentRoomUser.User.Email)
+        var opponentUser = opponentRoomUser is { }
+            ? new UserDto(opponentRoomUser.Id, opponentRoomUser.UserName, opponentRoomUser.Email)
             : null;
 
         var roomDto = new RoomDto(
@@ -67,10 +59,7 @@ public sealed class RoomService : IRoomService
             room.CountUser,
             room.Password,
             new UserDto(room.HostUser.Id, room.HostUser.UserName, room.HostUser.Email),
-            opponentUser)
-        {
-            Users = room.RoomUsers.Select(x => new UserDto(x.UserId, x.User?.UserName, x.User?.Email))
-        };
+            opponentUser);
 
         return roomDto;
     }
@@ -79,6 +68,7 @@ public sealed class RoomService : IRoomService
         var room = new Room
         {
             HostUserId = createRoomDto.HostUserId,
+            OpponentUserId = createRoomDto.OpponentId,
             Password = createRoomDto.Password,
         };
 
@@ -93,12 +83,17 @@ public sealed class RoomService : IRoomService
     public async Task Join(JoinRoomDto joinRoomDto)
     {
         var room = await _applicationDbContext.Rooms
-            .Include(x => x.RoomUsers)
             .SingleOrDefaultAsync(x => x.Code == joinRoomDto.RoomCode)
             ?? throw new NotFoundException(typeof(Room).Name, joinRoomDto.RoomCode);
 
+        if (room.OpponentUserId is { }
+            && room.HostUser is { })
+        {
+            return;
+        }
+
         if (room.HostUserId == joinRoomDto.UserId
-            || room.RoomUsers.Any(x => x.UserId == joinRoomDto.UserId))
+            || room.OpponentUserId == joinRoomDto.UserId)
         {
             return;
         }
@@ -107,9 +102,7 @@ public sealed class RoomService : IRoomService
             .SingleOrDefaultAsync(x => x.Id == joinRoomDto.UserId)
             ?? throw new NotFoundException(typeof(ApplicationUser).Name, joinRoomDto.UserId);
 
-        room.CountUser += 1;
-
-        room.RoomUsers.Add(new RoomUser { User = user, IsPlayer = !room.RoomUsers.Any() });
+        room.OpponentUser = user;
 
         await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
     }
@@ -121,19 +114,18 @@ public sealed class RoomService : IRoomService
     public async Task Leave(LeaveRoomDto leaveRoomDto)
     {
         var room = await _applicationDbContext.Rooms
-            .Include(x => x.RoomUsers)
+            .Include(x => x.OpponentUser)
             .SingleOrDefaultAsync(x => x.Code == leaveRoomDto.RoomCode)
             ?? throw new NotFoundException(typeof(Room).Name, leaveRoomDto.RoomCode);
 
-        if (room.HostUserId == leaveRoomDto.UserId) return;
+        if (room.HostUserId == leaveRoomDto.UserId || room.OpponentUserId is null) return;
 
-        var user = room.RoomUsers.FirstOrDefault(x => x.UserId == leaveRoomDto.UserId);
+        var hasUser = room.OpponentUserId == leaveRoomDto.UserId;
 
-        if (user is null) return;
+        if (!hasUser) return;
 
-        room.CountUser -= 1;
-
-        room.RoomUsers.Remove(user);
+        room.OpponentUserId = null;
+        room.OpponentUser = null;
 
         await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
     }

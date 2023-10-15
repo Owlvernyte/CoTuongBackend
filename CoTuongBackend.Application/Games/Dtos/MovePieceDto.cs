@@ -2,4 +2,4 @@
 
 namespace CoTuongBackend.Application.Games.Dtos;
 
-public sealed record MovePieceDto(string RoomCode, Coordinate Source, Coordinate Destination);
+public sealed record MovePieceDto(Coordinate Source, Coordinate Destination);
