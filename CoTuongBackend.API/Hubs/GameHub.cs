@@ -33,18 +33,25 @@ public class GameHub : Hub<IGameHubClient>
             return;
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
-            return;
+        {
+            Context.Abort();
+        }
 
         var roomCode = roomCodeStringValues.ToString();
 
         var isExists = await _roomService.IsExists(x => x.Code == roomCode);
 
-        if (!isExists) return;
+        if (!isExists)
+        {
+            Context.Abort();
+            return;
+        }
 
         await _roomService.Join(new JoinRoomDto(roomCode, _userAccessor.Id));
 
         if (!await _roomService.IsExists(x => x.OpponentUserId == _userAccessor.Id || x.HostUserId == _userAccessor.Id))
         {
+            Context.Abort();
             return;
         }
 
@@ -58,7 +65,11 @@ public class GameHub : Hub<IGameHubClient>
             board = Boards[roomCode];
         }
 
-        if (board is null) return;
+        if (board is null)
+        {
+            Context.Abort();
+            return;
+        }
 
         // Send Board info to group
         _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ket noi vao hub", _userAccessor.UserName, Context.ConnectionId);
@@ -79,10 +90,16 @@ public class GameHub : Hub<IGameHubClient>
         // Get Room Code
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
+        {
+            Context.Abort();
             return;
+        }
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
+        {
+            Context.Abort();
             return;
+        }
 
         var roomCode = roomCodeStringValues.ToString();
 
@@ -93,8 +110,6 @@ public class GameHub : Hub<IGameHubClient>
 
         await Clients.Group(roomCode)
             .Left(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
-
-        return;
     }
     public Task Move(MovePieceDto movePieceDto)
     {
