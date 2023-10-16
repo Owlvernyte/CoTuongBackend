@@ -111,14 +111,49 @@ public class GameHub : Hub<IGameHubClient>
         await Clients.Group(roomCode)
             .Left(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
     }
+    public async Task NewGame()
+    {
+
+        var httpContext = Context.GetHttpContext();
+        if (httpContext == null)
+            return;
+        if (!httpContext.Request.Query
+            .TryGetValue("roomCode", out var roomCodeStringValues))
+            return;
+
+        var roomCode = roomCodeStringValues.ToString();
+
+        var isExists = await _roomService.IsExists(x => x.Code == roomCode && x.HostUserId == _userAccessor.Id);
+
+        if (!isExists)
+        {
+            return;
+        }
+        var hasBoard = Boards.TryGetValue(roomCode, out var board);
+
+        if (hasBoard)
+        {
+            Boards[roomCode].Reset();
+        }
+        else
+        {
+            Boards.Add(roomCode, new Board());
+        }
+
+        board = Boards[roomCode];
+
+        await Clients.Group(roomCode).LoadBoard(board.Squares);
+
+        return;
+    }
     public Task Move(MovePieceDto movePieceDto)
     {
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
-            return Task.CompletedTask; ;
+            return Task.CompletedTask;
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
-            return Task.CompletedTask; ;
+            return Task.CompletedTask;
 
         var roomCode = roomCodeStringValues.ToString();
 
