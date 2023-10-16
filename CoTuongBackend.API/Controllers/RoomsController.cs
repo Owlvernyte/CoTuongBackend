@@ -27,6 +27,13 @@ public class RoomsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("leave")]
+    public async Task<IActionResult> Leave(LeaveRoomDto request)
+    {
+        await _roomService.Leave(request).ConfigureAwait(false);
+        return NoContent();
+    }
+
     [HttpPost]
     public async Task<IActionResult> Post(CreateRoomDto request)
     {
@@ -51,6 +58,29 @@ public class RoomsController : ControllerBase
             roomDto.Board = ConvertToBoardArray(board.Squares);
         }
         return Ok(roomDtos);
+    }
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<RoomDto>> Get(Guid id)
+    {
+        var roomDto = await _roomService.Get(id);
+        var hasBoard = GameHub.Boards.TryGetValue(roomDto.Code, out var board);
+        if (hasBoard && board is { })
+        {
+            roomDto.Board = ConvertToBoardArray(board.Squares);
+        }
+        return Ok(roomDto);
+    }
+
+    [HttpGet("{code}")]
+    public async Task<ActionResult<RoomDto>> Get(String code)
+    {
+        var roomDto = await _roomService.Get(code);
+        var hasBoard = GameHub.Boards.TryGetValue(roomDto.Code, out var board);
+        if (hasBoard && board is { })
+        {
+            roomDto.Board = ConvertToBoardArray(board.Squares);
+        }
+        return Ok(roomDto);
     }
     public static string[] ConvertToBoardArray(List<List<Piece?>> initSquares)
     {

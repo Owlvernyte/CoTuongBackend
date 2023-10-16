@@ -46,7 +46,10 @@ public static class ConfigureServices
                 options.AddSignalRSwaggerGen();
             });
 
-        services.AddSignalR();
+        services.AddSignalR(o =>
+        {
+            o.EnableDetailedErrors = true;
+        });
         services.AddHttpContextAccessor();
 
         return services;

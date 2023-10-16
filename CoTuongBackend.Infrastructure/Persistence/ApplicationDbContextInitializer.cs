@@ -47,11 +47,17 @@ public class ApplicationDbContextInitializer
     {
         if (_context.Users.Any()) return;
 
-        var tyui = new ApplicationUser
+        var user = new ApplicationUser
         {
-            UserName = "tyui",
-            Email = "tyui@gmail.com",
-            Role = Role.User
+            UserName = "user",
+            Email = "user@gmail.com"
+        };
+
+        var mei = new ApplicationUser
+        {
+            UserName = "mei",
+            Email = "mei@gmail.com",
+            Role = Role.Admin
         };
         var thai = new ApplicationUser
         {
@@ -59,7 +65,52 @@ public class ApplicationDbContextInitializer
             Email = "thai@gmail.com",
             Role = Role.Admin
         };
-        await _userManager.CreateAsync(tyui, "12345678");
-        await _userManager.CreateAsync(thai, "12345678");
+        var tyui = new ApplicationUser
+        {
+            UserName = "tyui",
+            Email = "tyui@gmail.com",
+            Role = Role.Admin
+        };
+        var fiezt = new ApplicationUser
+        {
+            UserName = "fiezt",
+            Email = "fiezt@gmail.com",
+            Role = Role.Admin
+        };
+        var schjr = new ApplicationUser
+        {
+            UserName = "schjr",
+            Email = "schjr@gmail.com",
+            Role = Role.Admin
+        };
+        var meelow = new ApplicationUser
+        {
+            UserName = "meelow",
+            Email = "meelow@gmail.com",
+            Role = Role.Admin
+        };
+        var shiro = new ApplicationUser
+        {
+            UserName = "shiro",
+            Email = "shiro@gmail.com",
+            Role = Role.Admin
+        };
+        var duong = new ApplicationUser
+        {
+            UserName = "duong",
+            Email = "duong@gmail.com",
+            Role = Role.Admin
+        };
+
+        await _userManager.CreateAsync(user, "P@ssw0rd");
+
+        await _userManager.CreateAsync(mei, "P@ssw0rd");
+        await _userManager.CreateAsync(thai, "P@ssw0rd");
+        await _userManager.CreateAsync(tyui, "P@ssw0rd");
+        await _userManager.CreateAsync(fiezt, "P@ssw0rd");
+        await _userManager.CreateAsync(schjr, "P@ssw0rd");
+        await _userManager.CreateAsync(meelow, "P@ssw0rd");
+        await _userManager.CreateAsync(shiro, "P@ssw0rd");
+        await _userManager.CreateAsync(duong, "P@ssw0rd");
     }
 }

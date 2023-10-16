@@ -1,7 +1,3 @@
 ﻿namespace CoTuongBackend.Application.Rooms.Dtos;
 
-public sealed record CreateRoomDto
-{
-    public string? Password { get; set; }
-    public Guid HostUserId { get; set; }
-}
+public sealed record CreateRoomDto(string? Password, Guid HostUserId, Guid? OpponentId);

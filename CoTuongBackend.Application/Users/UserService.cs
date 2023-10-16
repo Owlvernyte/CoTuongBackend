@@ -1,6 +1,7 @@
 ﻿using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Interfaces;
+using CoTuongBackend.Domain.Services;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
@@ -12,11 +13,23 @@ public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
+    private readonly IUserAccessor _userAccessor;
 
-    public UserService(UserManager<ApplicationUser> userManager, ITokenService tokenService)
+    public UserService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IUserAccessor userAccessor)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _userAccessor = userAccessor;
+    }
+    public Task<AccountDto> CheckAuthorization()
+    {
+        return Task.FromResult(new AccountDto
+        {
+            Id = _userAccessor.Id,
+            UserName = _userAccessor.UserName,
+            Email = _userAccessor.Email!,
+            Token = _userAccessor.Jwt
+        });
     }
     public async Task<AccountDto> Login(string userNameOrEmail, string password)
     {

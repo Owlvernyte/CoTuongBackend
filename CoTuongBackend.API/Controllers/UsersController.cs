@@ -21,41 +21,37 @@ public class UsersController : ControllerBase
         _tokenService = tokenService;
     }
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto registerDTO)
-    {
-        return Ok(await _userService.Register(registerDTO.Username, registerDTO.Email, registerDTO.Password, registerDTO.ConfirmPassword));
-    }
+    public async Task<ActionResult<AccountDto>> Register([FromBody] RegisterDto registerDTO)
+        => Ok(await _userService.Register(registerDTO.Username, registerDTO.Email, registerDTO.Password, registerDTO.ConfirmPassword));
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDTO)
-    {
-        return Ok(await _userService.Login(loginDTO.UserNameOrEmail, loginDTO.Password));
-    }
+    public async Task<ActionResult<AccountDto>> Login([FromBody] LoginDto loginDTO)
+        => Ok(await _userService.Login(loginDTO.UserNameOrEmail, loginDTO.Password));
+
     [HttpPost("change-password")]
-    public async Task<IActionResult> CHangePassword([FromBody] ChagePasswordDto chagePasswordDTO)
-    {
-        return Ok(await _userService.ChangePassword(chagePasswordDTO.UserNameOrEmail,chagePasswordDTO.NewPassword,chagePasswordDTO.ConfirmPassword,chagePasswordDTO.OldPassword));
-    }
+    public async Task<ActionResult<AccountDto>> ChangePassword([FromBody] ChagePasswordDto chagePasswordDTO)
+        => Ok(await _userService.ChangePassword(chagePasswordDTO.UserNameOrEmail, chagePasswordDTO.NewPassword, chagePasswordDTO.ConfirmPassword, chagePasswordDTO.OldPassword));
+
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<ActionResult<string>> Get()
     {
-        var firstUser = await _context.Users.FirstOrDefaultAsync();
-        if (firstUser == null)
-        {
+        var firstUser = await _context.Users
+            .OrderBy(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+        if (firstUser is null)
             return NotFound();
-        }
         var token = _tokenService.CreateToken(firstUser);
         return Ok(token);
     }
+
     [Authorize]
-    [HttpGet("check-authorize")]
-    public int GetNum()
-    {
-        return 3;
-    }
+    [HttpGet("check-authorization")]
+    public async Task<ActionResult<AccountDto>> CheckAuthorization()
+        => Ok(await _userService.CheckAuthorization());
+
     [HttpGet("users")]
-    public async Task<IActionResult> GetUsers()
-    {
-        return Ok(_context.Users);
-    }
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+        => Ok(await _context.Users
+            .Select(u => new UserDto(u.Id, u.UserName, u.Email))
+            .ToListAsync());
 }
