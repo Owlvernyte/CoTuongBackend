@@ -63,6 +63,35 @@ public sealed class RoomService : IRoomService
 
         return roomDto;
     }
+
+    public async Task<RoomDto> Get(String code)
+    {
+        var room = await _applicationDbContext.Rooms
+            .Include(x => x.HostUser)
+            .Include(x => x.OpponentUser)
+            .SingleOrDefaultAsync(x => x.Code == code)
+            ?? throw new NotFoundException(typeof(Room).Name, code);
+        if (room.HostUser is null)
+        {
+            throw new InvalidOperationException("Host not exist!");
+        }
+
+        var opponentRoomUser = room.OpponentUser;
+
+        var opponentUser = opponentRoomUser is { }
+            ? new UserDto(opponentRoomUser.Id, opponentRoomUser.UserName, opponentRoomUser.Email)
+            : null;
+
+        var roomDto = new RoomDto(
+            room.Id,
+            room.Code,
+            room.CountUser,
+            room.Password,
+            new UserDto(room.HostUser.Id, room.HostUser.UserName, room.HostUser.Email),
+            opponentUser);
+
+        return roomDto;
+    }
     public async Task<Guid> Create(CreateRoomDto createRoomDto)
     {
         var room = new Room
