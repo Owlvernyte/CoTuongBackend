@@ -45,7 +45,8 @@ public class ApplicationDbContextInitializer
 
     public async Task TrySeedAsync()
     {
-        if (_context.Users.Any()) return;
+        if (_context.Users.Any()
+            || _context.Matches.Any()) return;
 
         var user = new ApplicationUser
         {
@@ -112,5 +113,45 @@ public class ApplicationDbContextInitializer
         await _userManager.CreateAsync(meelow, "P@ssw0rd");
         await _userManager.CreateAsync(shiro, "P@ssw0rd");
         await _userManager.CreateAsync(duong, "P@ssw0rd");
+
+        var matches = new List<Match>
+        {
+            new Match
+            {
+                UserMatches = new List<UserMatch>
+                {
+                    new UserMatch
+                    {
+                        User = thai,
+                        Result = MatchResult.Lose
+                    },
+                    new UserMatch
+                    {
+                        User = mei,
+                        Result = MatchResult.Win
+                    }
+                }
+            },
+            new Match
+            {
+                UserMatches = new List<UserMatch>
+                {
+                    new UserMatch
+                    {
+                        User = tyui,
+                        Result = MatchResult.Draw
+                    },
+                    new UserMatch
+                    {
+                        User = schjr,
+                        Result = MatchResult.Draw
+                    }
+                }
+            },
+        };
+
+        await _context.AddRangeAsync(matches);
+
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 }
