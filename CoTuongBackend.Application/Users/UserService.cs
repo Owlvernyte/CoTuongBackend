@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoTuongBackend.Application.Services;
 
-public class UserService : IUserService
+public sealed class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
