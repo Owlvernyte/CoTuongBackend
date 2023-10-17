@@ -103,7 +103,7 @@ public class GameHub : Hub<IGameHubClient>
 
         var roomCode = roomCodeStringValues.ToString();
 
-        await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
+        //await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
 
         // Remove the user out the group
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
