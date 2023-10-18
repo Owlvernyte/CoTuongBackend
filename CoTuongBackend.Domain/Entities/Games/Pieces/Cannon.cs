@@ -36,14 +36,14 @@ public sealed class Cannon : Piece
     {
         if (Coord!.X < destinationCoordinate.X)
         {
-            for (int i = Coord.X; i < destinationCoordinate.X; i++)
+            for (int i = Coord.X + 1; i < destinationCoordinate.X; i++)
             {
                 if (board.Squares[i][destinationCoordinate.Y] != null)
                     return false;
             }
             return true;
         }
-        for (int i = Coord.X; i > destinationCoordinate.X; i--)
+        for (int i = Coord.X - 1; i > destinationCoordinate.X; i--)
         {
             if (board.Squares[i][destinationCoordinate.Y] != null)
                 return false;
@@ -55,14 +55,14 @@ public sealed class Cannon : Piece
     {
         if (Coord!.Y < destinationCoordinate.Y)
         {
-            for (int i = Coord.Y; i < destinationCoordinate.Y; i++)
+            for (int i = Coord.Y + 1; i < destinationCoordinate.Y; i++)
             {
                 if (board.Squares[destinationCoordinate.X][i] != null)
                     return false;
             }
             return true;
         }
-        for (int i = Coord.Y; i > destinationCoordinate.Y; i--)
+        for (int i = Coord.Y - 1; i > destinationCoordinate.Y; i--)
         {
             if (board.Squares[destinationCoordinate.X][i] != null)
                 return false;
@@ -74,7 +74,7 @@ public sealed class Cannon : Piece
         int count = 0;
         if (Coord!.X < desPiece.Coord!.X)
         {
-            for (int i = Coord.X; i < desPiece.Coord.X; i++)
+            for (int i = Coord.X + 1; i < desPiece.Coord.X; i++)
             {
                 if (board.Squares[i][desPiece.Coord.Y] != null)
                     count++;
@@ -82,7 +82,7 @@ public sealed class Cannon : Piece
         }
         else
         {
-            for (int i = Coord.X; i > desPiece.Coord.X; i--)
+            for (int i = Coord.X - 1; i > desPiece.Coord.X; i--)
             {
                 if (board.Squares[i][desPiece.Coord.Y] != null)
                     count++;
@@ -98,7 +98,7 @@ public sealed class Cannon : Piece
         int count = 0;
         if (Coord!.Y < desPiece.Coord!.Y)
         {
-            for (int i = Coord.Y; i < desPiece.Coord.Y; i++)
+            for (int i = Coord.Y + 1; i < desPiece.Coord.Y; i++)
             {
                 if (board.Squares[Coord.X][i] != null)
                     count++;
@@ -106,7 +106,7 @@ public sealed class Cannon : Piece
         }
         else
         {
-            for (int i = Coord.Y; i > desPiece.Coord.Y; i--)
+            for (int i = Coord.Y - 1; i > desPiece.Coord.Y; i--)
             {
                 if (board.Squares[desPiece.Coord.X][i] != null)
                     count++;
