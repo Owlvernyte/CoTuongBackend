@@ -14,10 +14,21 @@ public sealed class Cannon : Piece
         bool isBaseValidMove = base.IsValidMove(destinationCoordinate, board);
         if (!isBaseValidMove)
             return false;
-        if (destinationCoordinate.X != Coord!.X)
-            return CheckRow(destinationCoordinate, board);
-        if (destinationCoordinate.Y != Coord.Y)
-            return CheckColums(destinationCoordinate, board);
+        Piece? desPiece = board.GetPiece(destinationCoordinate);
+        if (desPiece == null)
+        {
+            if (destinationCoordinate.X != Coord!.X)
+                return CheckRow(destinationCoordinate, board);
+            if (destinationCoordinate.Y != Coord.Y)
+                return CheckColums(destinationCoordinate, board);
+        }
+        else
+        {
+            if(destinationCoordinate.X != Coord!.X)
+                return CheckRemoveDesRow(desPiece, board);
+            if (destinationCoordinate.Y != Coord.Y)
+                return CheckRemoveDesColums(desPiece,board);
+        }
         return true;
     }
 
@@ -57,5 +68,52 @@ public sealed class Cannon : Piece
                 return false;
         }
         return true;
+    }
+    public bool CheckRemoveDesRow(Piece desPiece, Board board)
+    {
+        int count = 0;
+        if (Coord!.X < desPiece.Coord!.X)
+        {
+            for (int i = Coord.X; i < desPiece.Coord.X; i++)
+            {
+                if (board.Squares[i][desPiece.Coord.Y] != null)
+                    count++;
+            }
+        }
+        else
+        {
+            for (int i = Coord.X; i > desPiece.Coord.X; i--)
+            {
+                if (board.Squares[i][desPiece.Coord.Y] != null)
+                    count++;
+            }
+        }
+        if(count == 1)
+            return true;
+        return false;
+    }
+
+    public bool CheckRemoveDesColums(Piece desPiece, Board board)
+    {
+        int count = 0;
+        if (Coord!.Y < desPiece.Coord!.Y)
+        {
+            for (int i = Coord.Y; i < desPiece.Coord.Y; i++)
+            {
+                if (board.Squares[Coord.X][i] != null)
+                    count++;
+            }
+        }
+        else
+        {
+            for (int i = Coord.Y; i > desPiece.Coord.Y; i--)
+            {
+                if (board.Squares[desPiece.Coord.X][i] != null)
+                    count++;
+            }
+        }
+        if (count == 1)
+            return true;
+        return false;
     }
 }
