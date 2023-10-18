@@ -9,4 +9,12 @@ public class Cannon : Piece
         PieceType = PieceType.Cannon;
         Signature = "C";
     }
+    public override bool IsValidMove(Coordinate destinationCoordinate, Board board)
+    {
+        bool isBaseValidMove = base.IsValidMove(destinationCoordinate, board);
+        if (!isBaseValidMove)
+            return false;
+
+        return true;
+    }
 }
