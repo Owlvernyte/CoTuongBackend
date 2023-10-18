@@ -8,7 +8,7 @@ using System.Text;
 
 namespace CoTuongBackend.Infrastructure.Services;
 
-public class TokenService : ITokenService
+public sealed class TokenService : ITokenService
 {
     private readonly string _tokenKey;
     private readonly TimeSpan _tokenLifespan;

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CoTuongBackend.Infrastructure.Persistence;
 
-public class ApplicationDbContextInitializer
+public sealed class ApplicationDbContextInitializer
 {
     private readonly ILogger<ApplicationDbContextInitializer> _logger;
     private readonly ApplicationDbContext _context;

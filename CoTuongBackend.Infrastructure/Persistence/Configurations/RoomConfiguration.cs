@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CoTuongBackend.Infrastructure.Persistence.Configurations;
 
-public class RoomConfiguration : IEntityTypeConfiguration<Room>
+public sealed class RoomConfiguration : IEntityTypeConfiguration<Room>
 {
     public void Configure(EntityTypeBuilder<Room> builder)
     {

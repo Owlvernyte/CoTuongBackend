@@ -2,7 +2,7 @@
 
 namespace CoTuongBackend.Domain.Entities.Games.Pieces;
 
-public class Elephant : Piece
+public sealed class Elephant : Piece
 {
     public Elephant()
     {

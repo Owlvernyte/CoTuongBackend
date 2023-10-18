@@ -7,14 +7,14 @@ using System.Collections.Immutable;
 namespace CoTuongBackend.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class MatchesController : ControllerBase
+public sealed class MatchesController : ControllerBase
 {
     private readonly IMatchService _matchService;
 
     public MatchesController(IMatchService matchService)
         => _matchService = matchService;
     [HttpPost]
-    public async Task<IActionResult> Post(CreateMatchWithRoomDto request)
+    public async Task<ActionResult<MatchDto>> Post(CreateMatchWithRoomDto request)
     {
         var matchId = await _matchService.Create(request);
         var matchDto = await _matchService.Get(matchId);

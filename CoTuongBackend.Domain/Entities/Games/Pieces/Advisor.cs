@@ -2,7 +2,7 @@
 
 namespace CoTuongBackend.Domain.Entities.Games.Pieces;
 
-public class Advisor : Piece
+public sealed class Advisor : Piece
 {
     public Advisor()
     {

@@ -2,7 +2,7 @@
 
 namespace CoTuongBackend.Domain.Entities.Games;
 
-public class Board
+public sealed class Board
 {
     public const int DefaultColumns = 9;
     public const int DefaultRows = 10;

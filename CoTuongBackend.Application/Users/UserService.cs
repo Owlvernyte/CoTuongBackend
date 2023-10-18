@@ -58,7 +58,7 @@ public sealed class UserService : IUserService
 
         if (userName.Length > 10)
             validationFailures
-                    .Add(new ValidationFailure("UserName", "User name must be less than 10 characters"));
+                    .Add(new ValidationFailure("UserName", "The username must be 10 characters or fewer"));
 
         if (await _userManager.Users.AnyAsync(u => u.UserName == userName))
             validationFailures

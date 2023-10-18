@@ -12,7 +12,7 @@ namespace CoTuongBackend.API.Hubs;
 
 [SignalRHub]
 [Authorize]
-public class GameHub : Hub<IGameHubClient>
+public sealed class GameHub : Hub<IGameHubClient>
 {
     private readonly IRoomService _roomService;
     private readonly IUserAccessor _userAccessor;
