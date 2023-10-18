@@ -10,17 +10,21 @@ public abstract class Piece
     public string Signature { get; set; } = string.Empty;
     public virtual bool IsValidMove(Coordinate destinationCoordinate, Board board)
     {
-        if(this.Coord == null)
+        if (Coord is null)
+        {
             return false;
-        if (destinationCoordinate.X >= board.Rows
-            || destinationCoordinate.X < 0)
+        }
+        if (destinationCoordinate.X < 0 || destinationCoordinate.Y < 0 || destinationCoordinate.X >= board.Rows || destinationCoordinate.Y >= board.Columns)
+        {
             return false;
-        if (destinationCoordinate.Y >= board.Columns
-            || destinationCoordinate.Y < 0)
+        }
+
+        var destinationPiece = board.Squares[destinationCoordinate.X][destinationCoordinate.Y];
+
+        if (destinationPiece is { } && destinationPiece.IsRed == this.IsRed)
+        {
             return false;
-        if(destinationCoordinate.X == this.Coord.X
-            && destinationCoordinate.Y == this.Coord.Y)
-            return false;
+        }
 
         return true;
     }
