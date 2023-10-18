@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CoTuongBackend.Infrastructure.Persistence.Configurations;
 
-public sealed class MatchConfiguration : IEntityTypeConfiguration<Match>
+public sealed class UserMatchConfiguration : IEntityTypeConfiguration<UserMatch>
 {
-    public void Configure(EntityTypeBuilder<Match> builder)
+    public void Configure(EntityTypeBuilder<UserMatch> builder)
     {
+        builder
+            .HasKey(x => new { x.UserId, x.MatchId });
     }
 }

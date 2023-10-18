@@ -2,12 +2,13 @@
 
 namespace CoTuongBackend.Domain.Entities.Games;
 
-public class Board
+public sealed class Board
 {
     public const int DefaultColumns = 9;
     public const int DefaultRows = 10;
     public int Columns { get; set; } = DefaultColumns;
     public int Rows { get; set; } = DefaultRows;
+    public bool IsHostRed { get; set; } = true;
     public List<List<Piece?>> Squares { get; set; } = new List<List<Piece?>>();
     public Board()
         => Squares = GetDefaultSquares();
@@ -46,6 +47,7 @@ public class Board
     public Board Reset()
     {
         Squares = GetDefaultSquares();
+        IsHostRed = !IsHostRed;
         return this;
     }
     public List<List<Piece?>> GetPieceMatrix()

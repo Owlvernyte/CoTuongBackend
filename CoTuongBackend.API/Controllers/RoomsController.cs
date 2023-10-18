@@ -11,14 +11,12 @@ namespace CoTuongBackend.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RoomsController : ControllerBase
+public sealed class RoomsController : ControllerBase
 {
     private readonly IRoomService _roomService;
 
     public RoomsController(IRoomService roomService)
-    {
-        _roomService = roomService;
-    }
+        => _roomService = roomService;
 
     [HttpPost("join")]
     public async Task<IActionResult> Join(JoinRoomDto request)

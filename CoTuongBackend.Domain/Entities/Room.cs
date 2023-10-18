@@ -11,5 +11,4 @@ public class Room : BaseEntity
     public virtual ApplicationUser? HostUser { get; set; }
     public Guid? OpponentUserId { get; set; }
     public virtual ApplicationUser? OpponentUser { get; set; }
-    public virtual ICollection<Match> Matches { get; set; } = new HashSet<Match>();
 }

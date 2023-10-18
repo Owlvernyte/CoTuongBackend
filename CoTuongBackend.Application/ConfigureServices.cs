@@ -1,4 +1,5 @@
-﻿using CoTuongBackend.Application.Rooms;
+﻿using CoTuongBackend.Application.Matches;
+using CoTuongBackend.Application.Rooms;
 using CoTuongBackend.Application.Services;
 using CoTuongBackend.Application.Users;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ public static class ConfigureServices
     {
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoomService, RoomService>();
+        services.AddScoped<IMatchService, MatchService>();
         return services;
     }
 }

@@ -64,7 +64,7 @@ public sealed class RoomService : IRoomService
         return roomDto;
     }
 
-    public async Task<RoomDto> Get(String code)
+    public async Task<RoomDto> Get(string code)
     {
         var room = await _applicationDbContext.Rooms
             .Include(x => x.HostUser)

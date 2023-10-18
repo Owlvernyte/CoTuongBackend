@@ -12,7 +12,7 @@ namespace CoTuongBackend.API.Hubs;
 
 [SignalRHub]
 [Authorize]
-public class GameHub : Hub<IGameHubClient>
+public sealed class GameHub : Hub<IGameHubClient>
 {
     private readonly IRoomService _roomService;
     private readonly IUserAccessor _userAccessor;
@@ -103,7 +103,7 @@ public class GameHub : Hub<IGameHubClient>
 
         var roomCode = roomCodeStringValues.ToString();
 
-        await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
+        //await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
 
         // Remove the user out the group
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);

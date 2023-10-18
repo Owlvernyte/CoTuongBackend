@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoTuongBackend.Application.Services;
 
-public class UserService : IUserService
+public sealed class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
@@ -58,7 +58,7 @@ public class UserService : IUserService
 
         if (userName.Length > 10)
             validationFailures
-                    .Add(new ValidationFailure("UserName", "User name must be less than 10 characters"));
+                    .Add(new ValidationFailure("UserName", "The username must be 10 characters or fewer"));
 
         if (await _userManager.Users.AnyAsync(u => u.UserName == userName))
             validationFailures
