@@ -6,7 +6,7 @@ namespace CoTuongBackend.API.Hubs;
 
 public interface IGameHubClient
 {
-    Task LoadBoard(List<List<Piece?>> squares, bool isRedTurn);
+    Task LoadBoard(List<List<Piece?>> squares, bool isHostRed, bool isRedTurn);
     Task Joined(UserDto userDto);
     Task JoinFailed(string roomCode);
     Task Left(UserDto userDto);
