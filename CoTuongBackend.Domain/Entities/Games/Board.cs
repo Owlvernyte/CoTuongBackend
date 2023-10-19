@@ -48,7 +48,8 @@ public sealed class Board
     public Board Reset()
     {
         Squares = GetDefaultSquares();
-        IsHostRed = !IsHostRed;
+        IsHostRed = true;
+        IsRedTurn = true;
         return this;
     }
     public List<List<Piece?>> GetPieceMatrix()
