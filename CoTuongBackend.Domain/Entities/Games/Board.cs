@@ -79,6 +79,14 @@ public sealed class Board
         return true;
     }
 
+    public bool IsOpponentGeneral(Piece sourcePiece, Coordinate destination)
+    {
+        var destinationPiece = Squares[destination.X][destination.Y];
+        if (destinationPiece is General && destinationPiece.IsRed != sourcePiece.IsRed)
+            return true;
+        return false;
+    }
+
     public Piece? GetPiece(Coordinate coordinate)
         => Squares[coordinate.X][coordinate.Y];
 }

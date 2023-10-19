@@ -12,4 +12,5 @@ public interface IGameHubClient
     Task Moved(Coordinate source, Coordinate destination, bool turn);
     Task MoveFailed(Coordinate source, Coordinate destination);
     Task Chatted(string message, string roomCode, UserDto userDto);
+    Task Ended(bool isWinnerRed, UserDto winner);
 }

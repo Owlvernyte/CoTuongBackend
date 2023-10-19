@@ -191,6 +191,11 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
 
+        if (board.IsOpponentGeneral(piece, destination))
+        {
+            Clients.Group(roomCode).Ended(piece.IsRed, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
+        }
+
         return Task.CompletedTask;
     }
     public Task Chat(string message)
