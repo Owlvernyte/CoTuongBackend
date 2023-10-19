@@ -14,7 +14,7 @@ public sealed class MatchesController : ControllerBase
     public MatchesController(IMatchService matchService)
         => _matchService = matchService;
     [HttpPost]
-    public async Task<ActionResult<MatchDto>> Post(CreateMatchWithRoomDto request)
+    public async Task<ActionResult<MatchDto>> Post(CreateMatchWithRoomIdDto request)
     {
         var matchId = await _matchService.Create(request);
         var matchDto = await _matchService.Get(matchId);

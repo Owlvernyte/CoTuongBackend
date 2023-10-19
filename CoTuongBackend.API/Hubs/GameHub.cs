@@ -1,4 +1,6 @@
 ﻿using CoTuongBackend.Application.Games.Dtos;
+using CoTuongBackend.Application.Matches;
+using CoTuongBackend.Application.Matches.Dtos;
 using CoTuongBackend.Application.Rooms;
 using CoTuongBackend.Application.Rooms.Dtos;
 using CoTuongBackend.Application.Users;
@@ -15,12 +17,14 @@ namespace CoTuongBackend.API.Hubs;
 public sealed class GameHub : Hub<IGameHubClient>
 {
     private readonly IRoomService _roomService;
+    private readonly IMatchService _matchService;
     private readonly IUserAccessor _userAccessor;
     private readonly ILogger<GameHub> _logger;
 
-    public GameHub(IRoomService roomService, IUserAccessor userAccessor, ILogger<GameHub> logger)
+    public GameHub(IRoomService roomService, IMatchService matchService, IUserAccessor userAccessor, ILogger<GameHub> logger)
     {
         _roomService = roomService;
+        _matchService = matchService;
         _userAccessor = userAccessor;
         _logger = logger;
     }
@@ -146,14 +150,14 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         return;
     }
-    public Task Move(MovePieceDto movePieceDto)
+    public async Task Move(MovePieceDto movePieceDto)
     {
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
-            return Task.CompletedTask;
+            return;
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
-            return Task.CompletedTask;
+            return;
 
         var roomCode = roomCodeStringValues.ToString();
 
@@ -163,40 +167,41 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         if (!hasRoom)
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return;
         }
 
         if (board is null)
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return;
         }
 
         var piece = board.GetPiece(source);
 
         if (piece is null)
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return;
         }
 
         var isValid = board.Move(piece, destination);
 
         if (!isValid)
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            return;
         }
 
-        Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
+        await Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
 
         if (board.IsOpponentGeneral(piece, destination))
         {
-            Clients.Group(roomCode).Ended(piece.IsRed, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
+            await _matchService.Create(new CreateMatchWithRoomCodeDto(roomCode, _userAccessor.Id));
+            await Clients.Group(roomCode).Ended(piece.IsRed, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
         }
 
-        return Task.CompletedTask;
+        return;
     }
     public Task Chat(string message)
     {
