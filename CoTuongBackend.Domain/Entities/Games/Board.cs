@@ -9,6 +9,7 @@ public sealed class Board
     public int Columns { get; set; } = DefaultColumns;
     public int Rows { get; set; } = DefaultRows;
     public bool IsHostRed { get; set; } = true;
+    public bool IsRedTurn { get; set; } = true;
     public List<List<Piece?>> Squares { get; set; } = new List<List<Piece?>>();
     public Board()
         => Squares = GetDefaultSquares();

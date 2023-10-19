@@ -11,6 +11,7 @@ public sealed class Chariot : Piece
     }
     public override bool IsValidMove(Coordinate destinationCoordinate, Board board)
     {
+        return true;
         bool isBaseValidMove = base.IsValidMove(destinationCoordinate, board);
         if (!isBaseValidMove)
             return false;

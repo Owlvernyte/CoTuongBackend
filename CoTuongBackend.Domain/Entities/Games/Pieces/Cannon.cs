@@ -11,6 +11,7 @@ public sealed class Cannon : Piece
     }
     public override bool IsValidMove(Coordinate destinationCoordinate, Board board)
     {
+        return true;
         bool isBaseValidMove = base.IsValidMove(destinationCoordinate, board);
         if (!isBaseValidMove)
             return false;
@@ -24,10 +25,10 @@ public sealed class Cannon : Piece
         }
         else
         {
-            if(destinationCoordinate.X != Coord!.X)
+            if (destinationCoordinate.X != Coord!.X)
                 return CheckRemoveDesRow(desPiece, board);
             if (destinationCoordinate.Y != Coord.Y)
-                return CheckRemoveDesColums(desPiece,board);
+                return CheckRemoveDesColums(desPiece, board);
         }
         return true;
     }
@@ -88,7 +89,7 @@ public sealed class Cannon : Piece
                     count++;
             }
         }
-        if(count == 1)
+        if (count == 1)
             return true;
         return false;
     }

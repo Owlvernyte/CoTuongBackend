@@ -6,11 +6,11 @@ namespace CoTuongBackend.API.Hubs;
 
 public interface IGameHubClient
 {
-    Task LoadBoard(List<List<Piece?>> squares);
+    Task LoadBoard(List<List<Piece?>> squares, bool isRedTurn);
     Task Joined(UserDto userDto);
     Task JoinFailed(string roomCode);
     Task Left(UserDto userDto);
-    Task Moved(Coordinate source, Coordinate destination, bool nextTurn);
+    Task Moved(Coordinate source, Coordinate destination, bool isRedTurn);
     Task MoveFailed(MoveStatus status);
     Task Chatted(string message, string roomCode, UserDto userDto);
     Task Ended(bool isWinnerRed, UserDto winner);

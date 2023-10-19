@@ -81,7 +81,7 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-        await Clients.Client(Context.ConnectionId).LoadBoard(board.Squares);
+        await Clients.Client(Context.ConnectionId).LoadBoard(board.Squares, board.IsRedTurn);
 
         await Clients.Group(roomCode)
             .Joined(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
@@ -147,7 +147,7 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         board = Boards[roomCode];
 
-        await Clients.Group(roomCode).LoadBoard(board.Squares);
+        await Clients.Group(roomCode).LoadBoard(board.Squares, board.IsRedTurn);
 
         return;
     }
@@ -198,6 +198,7 @@ public sealed class GameHub : Hub<IGameHubClient>
         }
 
         board.Move(piece, destination);
+        board.IsRedTurn = !piece.IsRed;
         await Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
 
         return;
