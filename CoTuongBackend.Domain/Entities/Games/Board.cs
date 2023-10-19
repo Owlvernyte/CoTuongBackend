@@ -64,19 +64,17 @@ public sealed class Board
         }
         return pieces!;
     }
-    public bool Move(Piece sourcePiece, Coordinate destination)
+    public void Move(Piece sourcePiece, Coordinate destination)
     {
-        if (sourcePiece is null) return false;
-        var isValid = sourcePiece.IsValidMove(destination, this);
-        if (!isValid) return false;
+        //if (sourcePiece is null) return false;
+        //var isValid = sourcePiece.IsValidMove(destination, this);
+        //if (!isValid) return false;
 
         Squares[sourcePiece.Coord!.X][sourcePiece.Coord.Y] = null;
 
         sourcePiece.Coord = destination;
 
         Squares[destination.X][destination.Y] = sourcePiece;
-
-        return true;
     }
 
     public bool IsOpponentGeneral(Piece sourcePiece, Coordinate destination)

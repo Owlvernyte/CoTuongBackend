@@ -1,4 +1,5 @@
 ﻿using CoTuongBackend.Application.Games.Dtos;
+using CoTuongBackend.Application.Games.Enums;
 using CoTuongBackend.Application.Matches;
 using CoTuongBackend.Application.Matches.Dtos;
 using CoTuongBackend.Application.Rooms;
@@ -150,6 +151,7 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         return;
     }
+
     public async Task Move(MovePieceDto movePieceDto)
     {
         var httpContext = Context.GetHttpContext();
@@ -167,13 +169,13 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         if (!hasRoom)
         {
-            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.RoomNotFound);
             return;
         }
 
         if (board is null)
         {
-            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.BoardNotFound);
             return;
         }
 
@@ -181,25 +183,22 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         if (piece is null)
         {
-            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.PieceNotFound);
             return;
         }
-
-        var isValid = board.Move(piece, destination);
-
-        if (!isValid)
+        if (!piece.IsValidMove(destination, board))
         {
-            await Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.InvalidMove);
             return;
         }
-
-        await Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
-
         if (board.IsOpponentGeneral(piece, destination))
         {
             await _matchService.Create(new CreateMatchWithRoomCodeDto(roomCode, _userAccessor.Id));
             await Clients.Group(roomCode).Ended(piece.IsRed, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
         }
+
+        board.Move(piece, destination);
+        await Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
 
         return;
     }
