@@ -48,7 +48,7 @@ public sealed class Board
     public Board Reset()
     {
         Squares = GetDefaultSquares();
-        IsHostRed = true;
+        IsHostRed = !IsHostRed;
         IsRedTurn = true;
         return this;
     }
