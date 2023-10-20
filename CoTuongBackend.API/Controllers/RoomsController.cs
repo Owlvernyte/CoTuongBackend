@@ -2,6 +2,7 @@
 using CoTuongBackend.Application.Rooms;
 using CoTuongBackend.Application.Rooms.Dtos;
 using CoTuongBackend.Domain.Entities.Games;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Immutable;
@@ -18,6 +19,7 @@ public sealed class RoomsController : ControllerBase
     public RoomsController(IRoomService roomService)
         => _roomService = roomService;
 
+    [Authorize]
     [HttpPost("join")]
     public async Task<IActionResult> Join(JoinRoomDto request)
     {
@@ -25,6 +27,7 @@ public sealed class RoomsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpPost("leave")]
     public async Task<IActionResult> Leave(LeaveRoomDto request)
     {
@@ -32,6 +35,7 @@ public sealed class RoomsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Post(CreateRoomDto request)
     {
@@ -70,7 +74,7 @@ public sealed class RoomsController : ControllerBase
     }
 
     [HttpGet("{code}")]
-    public async Task<ActionResult<RoomDto>> Get(String code)
+    public async Task<ActionResult<RoomDto>> Get(string code)
     {
         var roomDto = await _roomService.Get(code);
         var hasBoard = GameHub.Boards.TryGetValue(roomDto.Code, out var board);
@@ -80,6 +84,33 @@ public sealed class RoomsController : ControllerBase
         }
         return Ok(roomDto);
     }
+    [Authorize]
+    [HttpDelete("{code}")]
+    public async Task<ActionResult<RoomDto>> Delete(string code)
+    {
+        var roomDto = await _roomService.Get(code);
+        var hasBoard = GameHub.Boards.TryGetValue(roomDto.Code, out var board);
+        if (hasBoard && board is { })
+        {
+            roomDto.Board = ConvertToBoardArray(board.Squares);
+        }
+        await _roomService.Delete(code).ConfigureAwait(false);
+        return Ok(roomDto);
+    }
+    [Authorize]
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<RoomDto>> Delete(Guid id)
+    {
+        var roomDto = await _roomService.Get(id);
+        var hasBoard = GameHub.Boards.TryGetValue(roomDto.Code, out var board);
+        if (hasBoard && board is { })
+        {
+            roomDto.Board = ConvertToBoardArray(board.Squares);
+        }
+        await _roomService.Delete(id).ConfigureAwait(false);
+        return Ok(roomDto);
+    }
+
     public static string[] ConvertToBoardArray(List<List<Piece?>> initSquares)
     {
         var boardArray = new List<string>();

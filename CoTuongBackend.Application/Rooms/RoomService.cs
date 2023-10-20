@@ -2,6 +2,7 @@
 using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Exceptions;
+using CoTuongBackend.Domain.Services;
 using CoTuongBackend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Immutable;
@@ -12,9 +13,13 @@ namespace CoTuongBackend.Application.Rooms;
 public sealed class RoomService : IRoomService
 {
     private readonly ApplicationDbContext _applicationDbContext;
+    private readonly IUserAccessor _userAccessor;
 
-    public RoomService(ApplicationDbContext applicationDbContext)
-        => _applicationDbContext = applicationDbContext;
+    public RoomService(ApplicationDbContext applicationDbContext, IUserAccessor userAccessor)
+    {
+        _applicationDbContext = applicationDbContext;
+        _userAccessor = userAccessor;
+    }
 
     public async Task<ImmutableList<RoomDto>> Get()
     {
@@ -109,6 +114,23 @@ public sealed class RoomService : IRoomService
         return room.Id;
     }
 
+    public async Task Delete(string code)
+    {
+        var room = await _applicationDbContext.Rooms
+            .SingleOrDefaultAsync(x => x.Code == code)
+            ?? throw new NotFoundException(typeof(Room).Name, code);
+
+        if (room.HostUserId != _userAccessor.Id)
+        {
+            throw new ForbiddenAccessException();
+        }
+
+        _applicationDbContext.Rooms
+            .Remove(room);
+
+        await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
     public async Task Join(JoinRoomDto joinRoomDto)
     {
         var room = await _applicationDbContext.Rooms
@@ -155,6 +177,23 @@ public sealed class RoomService : IRoomService
 
         room.OpponentUserId = null;
         room.OpponentUser = null;
+
+        await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task Delete(Guid id)
+    {
+        var room = await _applicationDbContext.Rooms
+            .FindAsync(id)
+            ?? throw new NotFoundException(typeof(Room).Name, id);
+
+        if (room.HostUserId != _userAccessor.Id)
+        {
+            throw new ForbiddenAccessException();
+        }
+
+        _applicationDbContext.Rooms
+            .Remove(room);
 
         await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
     }
