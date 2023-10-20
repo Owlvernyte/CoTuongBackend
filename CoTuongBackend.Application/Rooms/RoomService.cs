@@ -138,7 +138,7 @@ public sealed class RoomService : IRoomService
             ?? throw new NotFoundException(typeof(Room).Name, joinRoomDto.RoomCode);
 
         if (room.OpponentUserId is { }
-            && room.HostUser is { })
+            && room.HostUserId is { })
         {
             return;
         }
