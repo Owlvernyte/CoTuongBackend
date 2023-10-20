@@ -14,5 +14,6 @@ public interface IRoomService
     Task<RoomDto> Get(string code);
     Task Delete(Guid id);
     Task Delete(string code);
+    Task Purge();
     Task<bool> IsExists(Expression<Func<Room, bool>> predicate);
 }

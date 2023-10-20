@@ -197,4 +197,15 @@ public sealed class RoomService : IRoomService
 
         await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
     }
+    public async Task Purge()
+    {
+        var user = await _applicationDbContext.Users
+            .SingleOrDefaultAsync(x => x.Id == _userAccessor.Id)
+            ?? throw new UnauthorizedAccessException();
+        if (user.Role != Domain.Enums.Role.Admin)
+            throw new ForbiddenAccessException();
+        await _applicationDbContext.Rooms
+            .ExecuteDeleteAsync()
+            .ConfigureAwait(false);
+    }
 }

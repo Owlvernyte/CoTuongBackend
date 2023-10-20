@@ -111,6 +111,14 @@ public sealed class RoomsController : ControllerBase
         return Ok(roomDto);
     }
 
+    [Authorize]
+    [HttpDelete("purge")]
+    public async Task<IActionResult> Purge()
+    {
+        await _roomService.Purge().ConfigureAwait(false);
+        return NoContent();
+    }
+
     public static string[] ConvertToBoardArray(List<List<Piece?>> initSquares)
     {
         var boardArray = new List<string>();
