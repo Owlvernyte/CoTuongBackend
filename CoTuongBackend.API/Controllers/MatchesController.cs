@@ -1,5 +1,6 @@
 ﻿using CoTuongBackend.Application.Matches;
 using CoTuongBackend.Application.Matches.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Immutable;
@@ -25,6 +26,7 @@ public sealed class MatchesController : ControllerBase
         return Created($"{domain}/{routeTemplate}/{matchId}", matchDto);
     }
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<ImmutableList<MatchDto>>> Get()
         => Ok(await _matchService.Get());
     [HttpGet("{id:guid}")]
