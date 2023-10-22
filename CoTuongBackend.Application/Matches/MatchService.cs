@@ -2,6 +2,7 @@
 using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Enums;
 using CoTuongBackend.Domain.Exceptions;
+using CoTuongBackend.Domain.Services;
 using CoTuongBackend.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Immutable;
@@ -11,9 +12,14 @@ namespace CoTuongBackend.Application.Matches;
 public sealed class MatchService : IMatchService
 {
     private readonly ApplicationDbContext _applicationDbContext;
+    private readonly IUserAccessor _userAccessor;
 
-    public MatchService(ApplicationDbContext applicationDbContext)
-        => _applicationDbContext = applicationDbContext;
+    public MatchService(ApplicationDbContext applicationDbContext, IUserAccessor userAccessor)
+    {
+        _applicationDbContext = applicationDbContext;
+        _userAccessor = userAccessor;
+    }
+
     public async Task<Guid> Create(CreateMatchWithRoomCodeDto createMatchWithRoomCodeDto)
     {
         var (roomCode, winnerId) = createMatchWithRoomCodeDto;
@@ -132,6 +138,7 @@ public sealed class MatchService : IMatchService
     {
         var matchDtos = await _applicationDbContext.Matches
             .Include(x => x.UserMatches)
+            .Where(x => x.UserMatches.Any(um => _userAccessor.Id == Guid.Empty || um.UserId == _userAccessor.Id))
             .Select(match => new MatchDto(
                 match.Id,
                 match.Status,
