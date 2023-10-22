@@ -15,9 +15,7 @@ public sealed class General : Piece
         var isBaseValidMove = base.IsValidMove(destinationCoordinate, board);
         if (!isBaseValidMove) return false;
 
-        if (Coord is null) return false;
-
-        var moveX = Math.Abs(Coord.X - destinationCoordinate.X);
+        var moveX = Math.Abs(Coord!.X - destinationCoordinate.X);
         var moveY = Math.Abs(Coord.Y - destinationCoordinate.Y);
 
         // Cho phép đi từng ô một ngang hoặc dọc

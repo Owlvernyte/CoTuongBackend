@@ -9,54 +9,44 @@ public sealed class Chariot : Piece
         PieceType = PieceType.Chariot;
         Signature = "R";
     }
-    public override bool IsValidMove(Coordinate destinationCoordinate, Board board)
+    public override bool IsValidMove(Coordinate destination, Board board)
     {
-        return true;
-        bool isBaseValidMove = base.IsValidMove(destinationCoordinate, board);
-        if (!isBaseValidMove)
-            return false;
-        if (destinationCoordinate.X != Coord!.X)
-            return CheckRow(destinationCoordinate, board);
-        if (destinationCoordinate.Y != Coord.Y)
-            return CheckColums(destinationCoordinate, board);
-        return true;
-    }
+        var isBaseValidMove = base.IsValidMove(destination, board);
+        if (!isBaseValidMove) return false;
 
-    public bool CheckRow(Coordinate destinationCoordinate, Board board)
-    {
-        if (Coord!.X < destinationCoordinate.X)
+        var directionX = destination.X - Coord!.X;
+        var directionY = destination.Y - Coord.Y;
+        var moveX = Math.Abs(directionX);
+        var moveY = Math.Abs(directionY);
+
+        // Khong cho phep di cheo
+        if (moveX > 0 && moveY > 0) return false;
+
+        // Kiem tra cot
+        if (moveY == 0)
         {
-            for (int i = Coord.X; i < destinationCoordinate.X; i++)
+            var headIndex = directionX > 0 ? Coord.X : destination.X;
+            var tailIndex = directionX < 0 ? Coord.X : destination.X;
+            for (var i = headIndex + 1; i < tailIndex; i++)
             {
-                if (board.Squares[i][destinationCoordinate.Y] != null)
+                if (board.Squares[i][Coord.Y] is { })
                     return false;
             }
-            return true;
         }
-        for (int i = Coord.X; i > destinationCoordinate.X; i--)
-        {
-            if (board.Squares[i][destinationCoordinate.Y] != null)
-                return false;
-        }
-        return true;
-    }
 
-    public bool CheckColums(Coordinate destinationCoordinate, Board board)
-    {
-        if (Coord!.Y < destinationCoordinate.Y)
+        // Kiem tra dong
+        if (moveX == 0)
         {
-            for (int i = Coord.Y; i < destinationCoordinate.Y; i++)
+            var headIndex = directionY > 0 ? Coord.Y : destination.Y;
+            var tailIndex = directionY < 0 ? Coord.Y : destination.Y;
+            for (var j = headIndex + 1; j < tailIndex; j++)
             {
-                if (board.Squares[destinationCoordinate.X][i] != null)
+                if (board.Squares[Coord.X][j] is { })
                     return false;
             }
-            return true;
         }
-        for (int i = Coord.Y; i > destinationCoordinate.Y; i--)
-        {
-            if (board.Squares[destinationCoordinate.X][i] != null)
-                return false;
-        }
+
+        // TODO: Sẽ cập nhật lại khi có Xoay Bàn Cờ!
         return true;
     }
 }

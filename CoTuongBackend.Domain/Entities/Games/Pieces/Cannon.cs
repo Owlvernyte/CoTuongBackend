@@ -9,112 +9,48 @@ public sealed class Cannon : Piece
         PieceType = PieceType.Cannon;
         Signature = "C";
     }
-    public override bool IsValidMove(Coordinate destinationCoordinate, Board board)
+    public override bool IsValidMove(Coordinate destination, Board board)
     {
-        return true;
-        bool isBaseValidMove = base.IsValidMove(destinationCoordinate, board);
-        if (!isBaseValidMove)
+        var isBaseValidMove = base.IsValidMove(destination, board);
+        if (!isBaseValidMove) return false;
+
+        var directionX = destination.X - Coord!.X;
+        var directionY = destination.Y - Coord!.Y;
+        var moveX = Math.Abs(directionX);
+        var moveY = Math.Abs(directionY);
+
+        // Khong cho phep di cheo
+        if (moveX > 0 && moveY > 0) return false;
+
+        var isOverPiece = board.Squares[destination.X][destination.Y] != null;
+        var count = 0;
+
+        // Kiem tra cot
+        if (moveY == 0)
+        {
+            var headIndex = directionX > 0 ? Coord.X : destination.X;
+            var tailIndex = directionX < 0 ? Coord.X : destination.X;
+            for (var i = headIndex + 1; i < tailIndex; i++)
+            {
+                if (board.Squares[i][Coord.Y] is { }) count++;
+            }
+        }
+
+        // Kiem tra dong
+        if (moveX == 0)
+        {
+            var headIndex = directionY > 0 ? Coord.Y : destination.Y;
+            var tailIndex = directionY < 0 ? Coord.Y : destination.Y;
+            for (var j = headIndex + 1; j < tailIndex; j++)
+            {
+                if (board.Squares[Coord.X][j] is { }) count++;
+            }
+        }
+
+        if ((!isOverPiece && count != 0) || (isOverPiece && count != 1))
             return false;
-        Piece? desPiece = board.GetPiece(destinationCoordinate);
-        if (desPiece == null)
-        {
-            if (destinationCoordinate.X != Coord!.X)
-                return CheckRow(destinationCoordinate, board);
-            if (destinationCoordinate.Y != Coord.Y)
-                return CheckColums(destinationCoordinate, board);
-        }
-        else
-        {
-            if (destinationCoordinate.X != Coord!.X)
-                return CheckRemoveDesRow(desPiece, board);
-            if (destinationCoordinate.Y != Coord.Y)
-                return CheckRemoveDesColums(desPiece, board);
-        }
-        return true;
-    }
 
-    public bool CheckRow(Coordinate destinationCoordinate, Board board)
-    {
-        if (Coord!.X < destinationCoordinate.X)
-        {
-            for (int i = Coord.X + 1; i < destinationCoordinate.X; i++)
-            {
-                if (board.Squares[i][destinationCoordinate.Y] != null)
-                    return false;
-            }
-            return true;
-        }
-        for (int i = Coord.X - 1; i > destinationCoordinate.X; i--)
-        {
-            if (board.Squares[i][destinationCoordinate.Y] != null)
-                return false;
-        }
+        // TODO: Sẽ cập nhật lại khi có Xoay Bàn Cờ!
         return true;
-    }
-
-    public bool CheckColums(Coordinate destinationCoordinate, Board board)
-    {
-        if (Coord!.Y < destinationCoordinate.Y)
-        {
-            for (int i = Coord.Y + 1; i < destinationCoordinate.Y; i++)
-            {
-                if (board.Squares[destinationCoordinate.X][i] != null)
-                    return false;
-            }
-            return true;
-        }
-        for (int i = Coord.Y - 1; i > destinationCoordinate.Y; i--)
-        {
-            if (board.Squares[destinationCoordinate.X][i] != null)
-                return false;
-        }
-        return true;
-    }
-    public bool CheckRemoveDesRow(Piece desPiece, Board board)
-    {
-        int count = 0;
-        if (Coord!.X < desPiece.Coord!.X)
-        {
-            for (int i = Coord.X + 1; i < desPiece.Coord.X; i++)
-            {
-                if (board.Squares[i][desPiece.Coord.Y] != null)
-                    count++;
-            }
-        }
-        else
-        {
-            for (int i = Coord.X - 1; i > desPiece.Coord.X; i--)
-            {
-                if (board.Squares[i][desPiece.Coord.Y] != null)
-                    count++;
-            }
-        }
-        if (count == 1)
-            return true;
-        return false;
-    }
-
-    public bool CheckRemoveDesColums(Piece desPiece, Board board)
-    {
-        int count = 0;
-        if (Coord!.Y < desPiece.Coord!.Y)
-        {
-            for (int i = Coord.Y + 1; i < desPiece.Coord.Y; i++)
-            {
-                if (board.Squares[Coord.X][i] != null)
-                    count++;
-            }
-        }
-        else
-        {
-            for (int i = Coord.Y - 1; i > desPiece.Coord.Y; i--)
-            {
-                if (board.Squares[desPiece.Coord.X][i] != null)
-                    count++;
-            }
-        }
-        if (count == 1)
-            return true;
-        return false;
     }
 }
