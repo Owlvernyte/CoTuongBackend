@@ -15,4 +15,5 @@ public interface IGameHubClient
     Task MoveFailed(MoveStatus status);
     Task Chatted(string message, string roomCode, UserDto userDto);
     Task Ended(bool isWinnerRed, UserDto winner);
+    Task RoomDeleted();
 }

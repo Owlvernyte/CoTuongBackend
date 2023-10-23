@@ -1,9 +1,10 @@
+using CoTuongBackend.API.Hubs;
 using CoTuongBackend.Application.Rooms;
+using CoTuongBackend.Infrastructure.Constants;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
-namespace CoTuongBackend.Infrastructure.Services;
+namespace CoTuongBackend.API.BackgroundServices;
 
 public class RoomBackgroundService : BackgroundService
 {
@@ -18,21 +19,27 @@ public class RoomBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var roomService = scope.ServiceProvider.GetRequiredService<IRoomService>();
         var memoryCache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+        var gameHubContext = scope.ServiceProvider.GetRequiredService<IHubContext<GameHub, IGameHubClient>>();
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                var roomCodeList = memoryCache.Get("Delete") as List<string> ?? new List<string>();
+                var roomCodeList = memoryCache.Get(MemoryCacheConstants.DeleteRoomCodeList) as List<string>;
 
-                foreach (var roomCode in roomCodeList)
+                if (roomCodeList is { })
                 {
-                    await roomService.DeleteWithoutPermission(roomCode);
+                    foreach (var roomCode in roomCodeList)
+                    {
+                        await roomService.DeleteWithoutPermission(roomCode);
+                        await gameHubContext.Clients.Group(roomCode).RoomDeleted().ConfigureAwait(false);
+                    }
+
+                    memoryCache.Remove(MemoryCacheConstants.DeleteRoomCodeList);
                 }
 
-                memoryCache.Remove("Delete");
 
                 // Wait for a specific interval before running the task again
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
             catch
             {

@@ -8,12 +8,11 @@ using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities.Games;
 using CoTuongBackend.Domain.Exceptions;
 using CoTuongBackend.Domain.Services;
+using CoTuongBackend.Infrastructure.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using SignalRSwaggerGen.Attributes;
-using System.Timers;
-using Timer = System.Timers.Timer;
 
 namespace CoTuongBackend.API.Hubs;
 
@@ -58,6 +57,15 @@ public sealed class GameHub : Hub<IGameHubClient>
             return;
         }
 
+        var deleteRoomCodeList = _memoryCache.Get<List<string>>(MemoryCacheConstants.DeleteRoomCodeList);
+        var isHost = await _roomService.IsExists(x => x.Code == roomCode && x.HostUserId == _userAccessor.Id);
+        if (deleteRoomCodeList is { } && deleteRoomCodeList.Contains(roomCode))
+        {
+            var absoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+            deleteRoomCodeList.Remove(roomCode);
+            _memoryCache.Set(MemoryCacheConstants.DeleteRoomCodeList, deleteRoomCodeList, absoluteExpirationRelativeToNow);
+        }
+
         await _roomService.Join(new JoinRoomDto(roomCode, _userAccessor.Id));
 
         if (!await _roomService.IsExists(x => x.OpponentUserId == _userAccessor.Id || x.HostUserId == _userAccessor.Id))
@@ -82,8 +90,7 @@ public sealed class GameHub : Hub<IGameHubClient>
             return;
         }
 
-        // Send Board info to group
-        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ket noi vao hub", _userAccessor.UserName, Context.ConnectionId);
+        _logger.LogInformation("User: {UserName} - {ConnectionId} connected", _userAccessor.UserName, Context.ConnectionId);
 
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
@@ -96,7 +103,7 @@ public sealed class GameHub : Hub<IGameHubClient>
     }
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ngat ket noi", _userAccessor.UserName, Context.ConnectionId);
+        _logger.LogInformation("User: {UserName} - {ConnectionId} disconnected", _userAccessor.UserName, Context.ConnectionId);
 
         // Get Room Code
         var httpContext = Context.GetHttpContext();
@@ -132,34 +139,21 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         if (room.HostUser.Id == _userAccessor.Id)
         {
-            var timeoutSecond = 5;
+            var timeoutSecond = 30;
             var timeout = timeoutSecond * 1000;
-            var timer = new Timer(timeout)
-            {
-                AutoReset = false
-            };
             await Clients.Group(roomCode).HostLeft(timeoutSecond);
-            timer.Elapsed += new ElapsedEventHandler(async (sender, o) =>
+            var absoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+            var list = await _memoryCache.GetOrCreateAsync(
+                MemoryCacheConstants.DeleteRoomCodeList,
+                x =>
+                {
+                    x.AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNow;
+                    return Task.FromResult(new List<string> { roomCode });
+                });
+            if (list is null)
             {
-                var absoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
-                var list = await _memoryCache.GetOrCreateAsync(
-                    "Delete",
-                    x =>
-                    {
-                        x.AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNow;
-                        return Task.FromResult(new List<string> { roomCode });
-                    });
-                if (list is null)
-                {
-                    _memoryCache.Set("Delete", new List<string> { roomCode }, absoluteExpirationRelativeToNow);
-                }
-                else
-                {
-                    list.Add(roomCode);
-                    _memoryCache.Set("Delete", list, absoluteExpirationRelativeToNow);
-                }
-            });
-            timer.Enabled = true;
+                _memoryCache.Set(MemoryCacheConstants.DeleteRoomCodeList, new List<string> { roomCode }, absoluteExpirationRelativeToNow);
+            }
         }
 
         // Remove the user out the group
@@ -268,7 +262,7 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         var roomCode = roomCodeStringValues.ToString();
 
-        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da chat {Message} vao hub {RoomCode}", _userAccessor.UserName, Context.ConnectionId, message, roomCode);
+        _logger.LogInformation("User: {UserName} - {ConnectionId} sent {Message} to room: {RoomCode}", _userAccessor.UserName, Context.ConnectionId, message, roomCode);
 
         Clients.Group(roomCode).Chatted(message, roomCode, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
         return Task.CompletedTask;
