@@ -79,6 +79,8 @@ public static class ConfigureServices
                 };
             });
 
+        services.AddMemoryCache();
+
         services.AddScoped<ApplicationDbContextInitializer>();
 
         services.AddScoped<ITokenService, TokenService>();

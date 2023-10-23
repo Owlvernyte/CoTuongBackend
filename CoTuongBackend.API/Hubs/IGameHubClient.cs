@@ -10,6 +10,7 @@ public interface IGameHubClient
     Task Joined(UserDto userDto);
     Task JoinFailed(string roomCode);
     Task Left(UserDto userDto);
+    Task HostLeft(int seconds);
     Task Moved(Coordinate source, Coordinate destination, bool isRedTurn);
     Task MoveFailed(MoveStatus status);
     Task Chatted(string message, string roomCode, UserDto userDto);

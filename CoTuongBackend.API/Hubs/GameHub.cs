@@ -6,10 +6,14 @@ using CoTuongBackend.Application.Rooms;
 using CoTuongBackend.Application.Rooms.Dtos;
 using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities.Games;
+using CoTuongBackend.Domain.Exceptions;
 using CoTuongBackend.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using SignalRSwaggerGen.Attributes;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace CoTuongBackend.API.Hubs;
 
@@ -21,13 +25,15 @@ public sealed class GameHub : Hub<IGameHubClient>
     private readonly IMatchService _matchService;
     private readonly IUserAccessor _userAccessor;
     private readonly ILogger<GameHub> _logger;
+    private readonly IMemoryCache _memoryCache;
 
-    public GameHub(IRoomService roomService, IMatchService matchService, IUserAccessor userAccessor, ILogger<GameHub> logger)
+    public GameHub(IRoomService roomService, IMatchService matchService, IUserAccessor userAccessor, ILogger<GameHub> logger, IMemoryCache memoryCache)
     {
         _roomService = roomService;
         _matchService = matchService;
         _userAccessor = userAccessor;
         _logger = logger;
+        _memoryCache = memoryCache;
     }
     public static Dictionary<string, Board> Boards { get; set; } = new();
     public override async Task OnConnectedAsync()
@@ -96,13 +102,11 @@ public sealed class GameHub : Hub<IGameHubClient>
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
         {
-            Context.Abort();
             return;
         }
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
         {
-            Context.Abort();
             return;
         }
 
@@ -110,15 +114,63 @@ public sealed class GameHub : Hub<IGameHubClient>
 
         //await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
 
+        RoomDto room;
+
+        try
+        {
+            room = await _roomService.Get(roomCode);
+        }
+        catch (NotFoundException)
+        {
+            return;
+        }
+
+        if (room is null)
+        {
+            return;
+        }
+
+        if (room.HostUser.Id == _userAccessor.Id)
+        {
+            var timeoutSecond = 5;
+            var timeout = timeoutSecond * 1000;
+            var timer = new Timer(timeout)
+            {
+                AutoReset = false
+            };
+            await Clients.Group(roomCode).HostLeft(timeoutSecond);
+            timer.Elapsed += new ElapsedEventHandler(async (sender, o) =>
+            {
+                var absoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
+                var list = await _memoryCache.GetOrCreateAsync(
+                    "Delete",
+                    x =>
+                    {
+                        x.AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNow;
+                        return Task.FromResult(new List<string> { roomCode });
+                    });
+                if (list is null)
+                {
+                    _memoryCache.Set("Delete", new List<string> { roomCode }, absoluteExpirationRelativeToNow);
+                }
+                else
+                {
+                    list.Add(roomCode);
+                    _memoryCache.Set("Delete", list, absoluteExpirationRelativeToNow);
+                }
+            });
+            timer.Enabled = true;
+        }
+
         // Remove the user out the group
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
 
         await Clients.Group(roomCode)
             .Left(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
     }
+
     public async Task NewGame()
     {
-
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
             return;
@@ -164,6 +216,8 @@ public sealed class GameHub : Hub<IGameHubClient>
         var roomCode = roomCodeStringValues.ToString();
 
         var (source, destination) = movePieceDto;
+
+        if (source == destination) return;
 
         var hasRoom = Boards.TryGetValue(roomCode, out var board);
 

@@ -131,6 +131,19 @@ public sealed class RoomService : IRoomService
         await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
+    public async Task DeleteWithoutPermission(string code)
+    {
+        var room = await _applicationDbContext.Rooms
+            .SingleOrDefaultAsync(x => x.Code == code);
+
+        if (room is null) return;
+
+        _applicationDbContext.Rooms
+            .Remove(room);
+
+        await _applicationDbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
     public async Task Join(JoinRoomDto joinRoomDto)
     {
         var room = await _applicationDbContext.Rooms
