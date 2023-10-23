@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CoTuongBackend.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class UsersController : ControllerBase
+public sealed class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly ApplicationDbContext _context;

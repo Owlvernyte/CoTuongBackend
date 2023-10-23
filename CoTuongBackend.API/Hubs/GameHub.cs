@@ -1,28 +1,38 @@
 ﻿using CoTuongBackend.Application.Games.Dtos;
+using CoTuongBackend.Application.Games.Enums;
+using CoTuongBackend.Application.Matches;
+using CoTuongBackend.Application.Matches.Dtos;
 using CoTuongBackend.Application.Rooms;
 using CoTuongBackend.Application.Rooms.Dtos;
 using CoTuongBackend.Application.Users;
 using CoTuongBackend.Domain.Entities.Games;
+using CoTuongBackend.Domain.Exceptions;
 using CoTuongBackend.Domain.Services;
+using CoTuongBackend.Infrastructure.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using SignalRSwaggerGen.Attributes;
 
 namespace CoTuongBackend.API.Hubs;
 
 [SignalRHub]
 [Authorize]
-public class GameHub : Hub<IGameHubClient>
+public sealed class GameHub : Hub<IGameHubClient>
 {
     private readonly IRoomService _roomService;
+    private readonly IMatchService _matchService;
     private readonly IUserAccessor _userAccessor;
     private readonly ILogger<GameHub> _logger;
+    private readonly IMemoryCache _memoryCache;
 
-    public GameHub(IRoomService roomService, IUserAccessor userAccessor, ILogger<GameHub> logger)
+    public GameHub(IRoomService roomService, IMatchService matchService, IUserAccessor userAccessor, ILogger<GameHub> logger, IMemoryCache memoryCache)
     {
         _roomService = roomService;
+        _matchService = matchService;
         _userAccessor = userAccessor;
         _logger = logger;
+        _memoryCache = memoryCache;
     }
     public static Dictionary<string, Board> Boards { get; set; } = new();
     public override async Task OnConnectedAsync()
@@ -45,6 +55,15 @@ public class GameHub : Hub<IGameHubClient>
         {
             Context.Abort();
             return;
+        }
+
+        var deleteRoomCodeList = _memoryCache.Get<List<string>>(MemoryCacheConstants.DeleteRoomCodeList);
+        var isHost = await _roomService.IsExists(x => x.Code == roomCode && x.HostUserId == _userAccessor.Id);
+        if (deleteRoomCodeList is { } && deleteRoomCodeList.Contains(roomCode))
+        {
+            var absoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+            deleteRoomCodeList.Remove(roomCode);
+            _memoryCache.Set(MemoryCacheConstants.DeleteRoomCodeList, deleteRoomCodeList, absoluteExpirationRelativeToNow);
         }
 
         await _roomService.Join(new JoinRoomDto(roomCode, _userAccessor.Id));
@@ -71,12 +90,11 @@ public class GameHub : Hub<IGameHubClient>
             return;
         }
 
-        // Send Board info to group
-        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ket noi vao hub", _userAccessor.UserName, Context.ConnectionId);
+        _logger.LogInformation("User: {UserName} - {ConnectionId} connected", _userAccessor.UserName, Context.ConnectionId);
 
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-        await Clients.Client(Context.ConnectionId).LoadBoard(board.Squares);
+        await Clients.Client(Context.ConnectionId).LoadBoard(board.Squares, board.IsHostRed, board.IsRedTurn);
 
         await Clients.Group(roomCode)
             .Joined(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
@@ -85,25 +103,58 @@ public class GameHub : Hub<IGameHubClient>
     }
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da ngat ket noi", _userAccessor.UserName, Context.ConnectionId);
+        _logger.LogInformation("User: {UserName} - {ConnectionId} disconnected", _userAccessor.UserName, Context.ConnectionId);
 
         // Get Room Code
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
         {
-            Context.Abort();
             return;
         }
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
         {
-            Context.Abort();
             return;
         }
 
         var roomCode = roomCodeStringValues.ToString();
 
-        await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
+        //await _roomService.Leave(new LeaveRoomDto(roomCode, _userAccessor.Id));
+
+        RoomDto room;
+
+        try
+        {
+            room = await _roomService.Get(roomCode);
+        }
+        catch (NotFoundException)
+        {
+            return;
+        }
+
+        if (room is null)
+        {
+            return;
+        }
+
+        if (room.HostUser.Id == _userAccessor.Id)
+        {
+            var timeoutSecond = 30;
+            var timeout = timeoutSecond * 1000;
+            await Clients.Group(roomCode).HostLeft(timeoutSecond);
+            var absoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+            var list = await _memoryCache.GetOrCreateAsync(
+                MemoryCacheConstants.DeleteRoomCodeList,
+                x =>
+                {
+                    x.AbsoluteExpirationRelativeToNow = absoluteExpirationRelativeToNow;
+                    return Task.FromResult(new List<string> { roomCode });
+                });
+            if (list is null)
+            {
+                _memoryCache.Set(MemoryCacheConstants.DeleteRoomCodeList, new List<string> { roomCode }, absoluteExpirationRelativeToNow);
+            }
+        }
 
         // Remove the user out the group
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomCode);
@@ -111,9 +162,9 @@ public class GameHub : Hub<IGameHubClient>
         await Clients.Group(roomCode)
             .Left(new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
     }
+
     public async Task NewGame()
     {
-
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
             return;
@@ -142,56 +193,63 @@ public class GameHub : Hub<IGameHubClient>
 
         board = Boards[roomCode];
 
-        await Clients.Group(roomCode).LoadBoard(board.Squares);
+        await Clients.Group(roomCode).LoadBoard(board.Squares, board.IsHostRed, board.IsRedTurn);
 
         return;
     }
-    public Task Move(MovePieceDto movePieceDto)
+
+    public async Task Move(MovePieceDto movePieceDto)
     {
         var httpContext = Context.GetHttpContext();
         if (httpContext == null)
-            return Task.CompletedTask;
+            return;
         if (!httpContext.Request.Query
             .TryGetValue("roomCode", out var roomCodeStringValues))
-            return Task.CompletedTask;
+            return;
 
         var roomCode = roomCodeStringValues.ToString();
 
         var (source, destination) = movePieceDto;
 
+        if (source == destination) return;
+
         var hasRoom = Boards.TryGetValue(roomCode, out var board);
 
         if (!hasRoom)
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.RoomNotFound);
+            return;
         }
 
         if (board is null)
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.BoardNotFound);
+            return;
         }
 
         var piece = board.GetPiece(source);
 
         if (piece is null)
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.PieceNotFound);
+            return;
         }
-
-        var isValid = board.Move(piece, destination);
-
-        if (!isValid)
+        if (!piece.IsValidMove(destination, board))
         {
-            Clients.Client(Context.ConnectionId).MoveFailed(source, destination);
-            return Task.CompletedTask;
+            await Clients.Client(Context.ConnectionId).MoveFailed(MoveStatus.InvalidMove);
+            return;
+        }
+        if (board.IsOpponentGeneral(piece, destination))
+        {
+            await _matchService.Create(new CreateMatchWithRoomCodeDto(roomCode, _userAccessor.Id));
+            await Clients.Group(roomCode).Ended(piece.IsRed, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
         }
 
-        Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
+        board.Move(piece, destination);
+        board.IsRedTurn = !piece.IsRed;
+        await Clients.Group(roomCode).Moved(source, destination, !piece.IsRed);
 
-        return Task.CompletedTask;
+        return;
     }
     public Task Chat(string message)
     {
@@ -204,7 +262,7 @@ public class GameHub : Hub<IGameHubClient>
 
         var roomCode = roomCodeStringValues.ToString();
 
-        _logger.LogInformation("Nguoi choi {UserName} - {ConnectionId} da chat {Message} vao hub {RoomCode}", _userAccessor.UserName, Context.ConnectionId, message, roomCode);
+        _logger.LogInformation("User: {UserName} - {ConnectionId} sent {Message} to room: {RoomCode}", _userAccessor.UserName, Context.ConnectionId, message, roomCode);
 
         Clients.Group(roomCode).Chatted(message, roomCode, new UserDto(_userAccessor.Id, _userAccessor.UserName, _userAccessor.Email));
         return Task.CompletedTask;

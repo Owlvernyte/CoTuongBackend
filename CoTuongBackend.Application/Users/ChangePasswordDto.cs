@@ -1,6 +1,6 @@
 ﻿namespace CoTuongBackend.Application.Users;
 
-public record ChagePasswordDto
+public sealed record ChagePasswordDto
 {
     public required string UserNameOrEmail { get; set; }
     public required string NewPassword { get; set; }

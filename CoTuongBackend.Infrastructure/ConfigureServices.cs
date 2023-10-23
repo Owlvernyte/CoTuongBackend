@@ -1,6 +1,7 @@
 ﻿using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Interfaces;
 using CoTuongBackend.Domain.Services;
+using CoTuongBackend.Infrastructure.Constants;
 using CoTuongBackend.Infrastructure.Persistence;
 using CoTuongBackend.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -51,10 +52,17 @@ public static class ConfigureServices
                 {
                     OnMessageReceived = context =>
                     {
-                        var accessToken = context.Request.Query["access_token"];
-                        if (!string.IsNullOrEmpty(accessToken))
+                        var hasCookieToken = context.Request.Cookies.TryGetValue(AuthenticationConstants.CookieUserToken, out var cookieToken);
+                        if (hasCookieToken && cookieToken is { })
+                        {
+                            context.Token = cookieToken;
+                            return Task.CompletedTask;
+                        }
+                        var hasAccessToken = context.Request.Query.TryGetValue(AuthenticationConstants.QueryUserToken, out var accessToken);
+                        if (hasAccessToken && accessToken is { })
                         {
                             context.Token = accessToken;
+                            return Task.CompletedTask;
                         }
                         return Task.CompletedTask;
                     }
@@ -70,6 +78,8 @@ public static class ConfigureServices
                     ClockSkew = TimeSpan.FromSeconds(5)
                 };
             });
+
+        services.AddMemoryCache();
 
         services.AddScoped<ApplicationDbContextInitializer>();
 

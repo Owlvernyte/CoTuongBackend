@@ -1,6 +1,6 @@
 ﻿namespace CoTuongBackend.Application.Users;
 
-public record RegisterDto
+public sealed record RegisterDto
 {
     public required string Username { get; set; }
     public required string Password { get; set; }

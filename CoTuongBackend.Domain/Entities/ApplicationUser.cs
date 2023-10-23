@@ -12,6 +12,5 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity<Guid>
 
     public virtual ICollection<Room> HostRoom { get; set; } = new HashSet<Room>();
     public virtual ICollection<Room> OpponentRoom { get; set; } = new HashSet<Room>();
-    public virtual ICollection<Match> HostedMatches { get; set; } = new HashSet<Match>();
-    public virtual ICollection<Match> OpponentMatches { get; set; } = new HashSet<Match>();
+    public virtual ICollection<UserMatch> UserMatches { get; set; } = new HashSet<UserMatch>();
 }

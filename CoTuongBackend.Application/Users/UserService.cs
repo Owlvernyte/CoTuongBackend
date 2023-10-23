@@ -2,24 +2,28 @@
 using CoTuongBackend.Domain.Entities;
 using CoTuongBackend.Domain.Interfaces;
 using CoTuongBackend.Domain.Services;
+using CoTuongBackend.Infrastructure.Constants;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoTuongBackend.Application.Services;
 
-public class UserService : IUserService
+public sealed class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
     private readonly IUserAccessor _userAccessor;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public UserService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IUserAccessor userAccessor)
+    public UserService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IUserAccessor userAccessor, IHttpContextAccessor httpContextAccessor)
     {
         _userManager = userManager;
         _tokenService = tokenService;
         _userAccessor = userAccessor;
+        _httpContextAccessor = httpContextAccessor;
     }
     public Task<AccountDto> CheckAuthorization()
     {
@@ -38,15 +42,20 @@ public class UserService : IUserService
             // TODO: Check UserName
             throw new UnauthorizedAccessException();
         }
-        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
-        if (await _userManager.CheckPasswordAsync(user!, password))
+        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail)
+            ?? throw new UnauthorizedAccessException();
+        if (await _userManager.CheckPasswordAsync(user, password))
         {
+
+            var token = _tokenService.CreateToken(user);
+            _httpContextAccessor.HttpContext?.Response.Cookies
+                .Append(AuthenticationConstants.CookieUserToken, token);
             return new AccountDto
             {
-                Id = user!.Id,
-                UserName = user.UserName!,
-                Email = user.Email!,
-                Token = _tokenService.CreateToken(user)
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Token = token
             };
         }
         throw new UnauthorizedAccessException();
@@ -58,7 +67,7 @@ public class UserService : IUserService
 
         if (userName.Length > 10)
             validationFailures
-                    .Add(new ValidationFailure("UserName", "User name must be less than 10 characters"));
+                    .Add(new ValidationFailure("UserName", "The username must be 10 characters or fewer"));
 
         if (await _userManager.Users.AnyAsync(u => u.UserName == userName))
             validationFailures
@@ -85,12 +94,15 @@ public class UserService : IUserService
 
         if (result.Succeeded)
         {
+            var token = _tokenService.CreateToken(user);
+            _httpContextAccessor.HttpContext?.Response.Cookies
+                .Append(AuthenticationConstants.CookieUserToken, token);
             return new AccountDto
             {
                 Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                Token = _tokenService.CreateToken(user)
+                Token = token
             };
         }
 
@@ -111,17 +123,21 @@ public class UserService : IUserService
             // TODO: Check UserName
             throw new UnauthorizedAccessException();
         }
-        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
-        if (await _userManager.CheckPasswordAsync(user!, oldPassword))
+        var user = await _userManager.Users.SingleOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail)
+            ?? throw new UnauthorizedAccessException();
+        if (await _userManager.CheckPasswordAsync(user, oldPassword))
         {
-            await _userManager.RemovePasswordAsync(user!);
-            await _userManager.AddPasswordAsync(user!, newPassword);
+            await _userManager.RemovePasswordAsync(user);
+            await _userManager.AddPasswordAsync(user, newPassword);
+            var token = _tokenService.CreateToken(user);
+            _httpContextAccessor.HttpContext?.Response.Cookies
+                .Append(AuthenticationConstants.CookieUserToken, token);
             return new AccountDto
             {
-                Id = user!.Id,
-                UserName = user.UserName!,
-                Email = user.Email!,
-                Token = _tokenService.CreateToken(user)
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Token = token
             };
         }
         else

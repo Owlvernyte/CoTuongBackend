@@ -1,6 +1,6 @@
 ﻿namespace CoTuongBackend.Application.Users;
 
-public record AccountDto
+public sealed record AccountDto
 {
     public Guid Id { get; set; }
     public string? UserName { get; set; }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace CoTuongBackend.API.Filters;
 
-public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
+public sealed class ApiExceptionFilterAttribute : ExceptionFilterAttribute
 {
     private readonly IDictionary<Type, Action<ExceptionContext>> _exceptionHandlers;
     private readonly ILogger<ApiExceptionFilterAttribute> _logger;
@@ -18,7 +18,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
             { typeof(ValidationException), HandleValidationException },
             { typeof(NotFoundException), HandleNotFoundException },
             { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
-            //{ typeof(ForbiddenAccessException), HandleForbiddenAccessException },
+            { typeof(ForbiddenAccessException), HandleForbiddenAccessException },
         };
         _logger = logger;
     }
@@ -49,7 +49,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
     {
         var exception = (InvalidOperationException)context.Exception;
 
-        _logger.LogError($"An invalid operation exception occurred: {exception.Message}");
+        _logger.LogError("An invalid operation exception occurred: {Message}", exception.Message);
 
         var details = new ProblemDetails
         {
@@ -71,7 +71,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
     {
         var exception = (ValidationException)context.Exception;
 
-        _logger.LogError($"A Validation exception occurred: {exception.Message}");
+        _logger.LogError("A Validation exception occurred: {Message}", exception.Message);
 
         var modelState = exception.Errors
             .GroupBy(e => e.PropertyName, e => e.ErrorMessage)
@@ -86,10 +86,10 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
 
         context.ExceptionHandled = true;
     }
-    private static void HandleInvalidModelStateException(ExceptionContext context)
+    private void HandleInvalidModelStateException(ExceptionContext context)
     {
         // TODO: You can not log error here
-        //_logger.LogError($"An Invalid Model exception occurred: {context.Exception.Message}");
+        _logger.LogError("An Invalid Model exception occurred: {Message}", context.Exception.Message);
 
         var details = new ValidationProblemDetails(context.ModelState)
         {
@@ -103,7 +103,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
     private void HandleNotFoundException(ExceptionContext context)
     {
         var exception = (NotFoundException)context.Exception;
-        _logger.LogError($"An Not Found exception occurred: {exception.Message}");
+        _logger.LogError("An Not Found exception occurred: {Message}", exception.Message);
         var details = new ProblemDetails()
         {
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
@@ -117,7 +117,7 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
     }
     private void HandleUnauthorizedAccessException(ExceptionContext context)
     {
-        _logger.LogError($"An Unauthorized Access exception occurred: {context.Exception.Message}");
+        _logger.LogError("An Unauthorized Access exception occurred: {Message}", context.Exception.Message);
         var details = new ProblemDetails
         {
             Status = StatusCodes.Status401Unauthorized,
@@ -128,6 +128,24 @@ public class ApiExceptionFilterAttribute : ExceptionFilterAttribute
         context.Result = new ObjectResult(details)
         {
             StatusCode = StatusCodes.Status401Unauthorized
+        };
+
+        context.ExceptionHandled = true;
+    }
+
+    private void HandleForbiddenAccessException(ExceptionContext context)
+    {
+        _logger.LogError("An Forbidden Access exception occurred: {Message}", context.Exception.Message);
+        var details = new ProblemDetails
+        {
+            Status = StatusCodes.Status403Forbidden,
+            Title = "Forbidden",
+            Type = "https://tools.ietf.org/html/rfc7235#section-3.1"
+        };
+
+        context.Result = new ObjectResult(details)
+        {
+            StatusCode = StatusCodes.Status403Forbidden
         };
 
         context.ExceptionHandled = true;

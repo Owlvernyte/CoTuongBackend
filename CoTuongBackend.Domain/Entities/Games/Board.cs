@@ -2,12 +2,14 @@
 
 namespace CoTuongBackend.Domain.Entities.Games;
 
-public class Board
+public sealed class Board
 {
     public const int DefaultColumns = 9;
     public const int DefaultRows = 10;
     public int Columns { get; set; } = DefaultColumns;
     public int Rows { get; set; } = DefaultRows;
+    public bool IsHostRed { get; set; } = true;
+    public bool IsRedTurn { get; set; } = true;
     public List<List<Piece?>> Squares { get; set; } = new List<List<Piece?>>();
     public Board()
         => Squares = GetDefaultSquares();
@@ -46,6 +48,8 @@ public class Board
     public Board Reset()
     {
         Squares = GetDefaultSquares();
+        IsHostRed = !IsHostRed;
+        IsRedTurn = true;
         return this;
     }
     public List<List<Piece?>> GetPieceMatrix()
@@ -62,19 +66,25 @@ public class Board
         }
         return pieces!;
     }
-    public bool Move(Piece sourcePiece, Coordinate destination)
+    public void Move(Piece sourcePiece, Coordinate destination)
     {
-        if (sourcePiece is null) return false;
-        var isValid = sourcePiece.IsValidMove(destination, this);
-        if (!isValid) return false;
+        //if (sourcePiece is null) return false;
+        //var isValid = sourcePiece.IsValidMove(destination, this);
+        //if (!isValid) return false;
 
         Squares[sourcePiece.Coord!.X][sourcePiece.Coord.Y] = null;
 
         sourcePiece.Coord = destination;
 
         Squares[destination.X][destination.Y] = sourcePiece;
+    }
 
-        return true;
+    public bool IsOpponentGeneral(Piece sourcePiece, Coordinate destination)
+    {
+        var destinationPiece = Squares[destination.X][destination.Y];
+        if (destinationPiece is General && destinationPiece.IsRed != sourcePiece.IsRed)
+            return true;
+        return false;
     }
 
     public Piece? GetPiece(Coordinate coordinate)

@@ -1,4 +1,5 @@
-﻿using CoTuongBackend.API.Filters;
+﻿using CoTuongBackend.API.BackgroundServices;
+using CoTuongBackend.API.Filters;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
@@ -51,6 +52,8 @@ public static class ConfigureServices
             o.EnableDetailedErrors = true;
         });
         services.AddHttpContextAccessor();
+
+        services.AddHostedService<RoomBackgroundService>();
 
         return services;
     }

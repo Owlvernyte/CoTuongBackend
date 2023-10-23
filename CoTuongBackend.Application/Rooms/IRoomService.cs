@@ -11,6 +11,10 @@ public interface IRoomService
     Task Join(JoinRoomDto joinRoomDto);
     Task Leave(LeaveRoomDto leaveRoomDto);
     Task<RoomDto> Get(Guid id);
-    Task<RoomDto> Get(String code);
+    Task<RoomDto> Get(string code);
+    Task Delete(Guid id);
+    Task Delete(string code);
+    Task DeleteWithoutPermission(string code);
+    Task Purge();
     Task<bool> IsExists(Expression<Func<Room, bool>> predicate);
 }
